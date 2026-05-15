@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{INITIATIVE_TITLE}} — Progress Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg-primary:#f4f6fa;
+    --bg-card:#ffffff;
+    --bg-header:#1a1a2e;
+    --text-primary:#1f2330;
+    --text-secondary:#6c757d;
+    --text-on-dark:#ffffff;
+    --border:#e6e8ee;
+    --color-todo:#9aa0a6;
+    --color-progress:#4C72B0;
+    --color-review:#DD8452;
+    --color-testing:#8172B3;
+    --color-done:#55A868;
+    --positive:#28a745;
+    --negative:#dc3545;
+    --gap:16px;
+    --radius:10px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.5}
+  a{color:#3a6fb5;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .dashboard-container{max-width:1500px;margin:0 auto;padding:var(--gap)}
+  .dashboard-header{background:var(--bg-header);color:var(--text-on-dark);padding:20px 24px;border-radius:var(--radius);margin-bottom:var(--gap);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .dashboard-header h1{font-size:18px;font-weight:600;letter-spacing:.2px}
+  .dashboard-header .subtitle{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px}
+  .filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .filter-group{display:flex;align-items:center;gap:6px}
+  .filter-group label{font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.4px}
+  .filter-group select{padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.1);color:var(--text-on-dark);font-size:12px;min-width:120px}
+  .filter-group select option{background:var(--bg-header);color:var(--text-on-dark)}
+  .reset-btn{padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:transparent;color:var(--text-on-dark);font-size:12px;cursor:pointer}
+  .reset-btn:hover{background:rgba(255,255,255,.1)}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--gap);margin-bottom:var(--gap)}
+  .kpi-card{background:var(--bg-card);border-radius:var(--radius);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border)}
+  .kpi-label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+  .kpi-value{font-size:26px;font-weight:700;color:var(--text-primary);line-height:1.1}
+  .kpi-sub{font-size:12px;color:var(--text-secondary);margin-top:4px}
+
+  .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-bottom:var(--gap)}
+  .chart-container{background:var(--bg-card);border-radius:var(--radius);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border)}
+  .chart-container h3{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+  .chart-canvas-wrap{position:relative;height:260px}
+
+  .summary-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-bottom:var(--gap)}
+  .summary-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border)}
+  .summary-card h3{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+  .summary-card h3::before{content:"";width:3px;height:14px;background:var(--color-progress);border-radius:2px}
+  .summary-card.actions h3::before{background:var(--color-review)}
+  .summary-card p{font-size:13px;line-height:1.6;color:var(--text-primary);margin-bottom:8px}
+  .summary-card ul{padding-left:20px;font-size:13px;line-height:1.6}
+  .summary-card li{margin-bottom:6px}
+  .summary-card .meta{font-size:11px;color:var(--text-secondary);margin-top:10px;font-style:italic}
+
+  .table-section{background:var(--bg-card);border-radius:var(--radius);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);overflow-x:auto}
+  .table-section h3{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+  .table-section h3.collapsible{cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px}
+  .table-section h3.collapsible:hover{color:var(--color-progress)}
+  .table-section h3 .chevron{display:inline-block;transition:transform .2s ease;font-size:14px;line-height:1;color:var(--text-secondary)}
+  .table-section.collapsed h3 .chevron{transform:rotate(-90deg)}
+  .table-section.collapsed #table-wrap{display:none}
+  .table-section.collapsed{margin-bottom:0}
+  .collapse-meta{margin-left:auto;font-weight:400;color:var(--text-secondary);text-transform:none;letter-spacing:0;font-size:12px}
+  .data-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .data-table thead th{text-align:left;padding:9px 10px;border-bottom:2px solid var(--border);color:var(--text-secondary);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;user-select:none;cursor:pointer}
+  .data-table thead th:hover{color:var(--text-primary);background:#f8f9fa}
+  .data-table tbody td{padding:9px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+  .data-table tbody tr:hover{background:#f8f9fa}
+  .data-table tbody tr:last-child td{border-bottom:none}
+
+  .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+  .badge-status-todo{background:#eef0f3;color:#4a525e}
+  .badge-status-progress{background:#e0e9f6;color:#2c5694}
+  .badge-status-review{background:#fbe7d6;color:#a45120}
+  .badge-status-testing{background:#ece4f5;color:#5a4189}
+  .badge-status-done{background:#dff1e3;color:#1f6b3a}
+  .badge-status-definition{background:#fff3cd;color:#7a5b00}
+  .badge-track{background:#f0f2f6;color:#4a525e;border:1px solid #e0e3e9}
+  .badge-pr-open{background:#e0e9f6;color:#2c5694}
+  .badge-pr-merged{background:#dff1e3;color:#1f6b3a}
+  .sp-cell{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+  .sp-cell.unsized{color:#b0331e;font-weight:500}
+  .empty{color:var(--text-secondary)}
+
+  .dashboard-footer{margin-top:var(--gap);font-size:11px;color:var(--text-secondary);text-align:center;padding:10px}
+
+  @media (max-width:960px){
+    .chart-row{grid-template-columns:1fr}
+    .summary-row{grid-template-columns:1fr}
+    .kpi-row{grid-template-columns:repeat(2,1fr)}
+  }
+  @media print{
+    body{background:white}
+    .dashboard-container{max-width:none}
+    .filters{display:none}
+    .chart-container,.kpi-card,.summary-card,.table-section{box-shadow:none;border:1px solid #ddd}
+  }
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+
+  <header class="dashboard-header">
+    <div>
+      <h1>{{INITIATIVE_TITLE}}</h1>
+      <div class="subtitle">{{INITIATIVE_SUBTITLE}}</div>
+    </div>
+    <div class="filters">
+      <div class="filter-group"><label for="filter-track">Track</label><select id="filter-track"><option value="all">All</option></select></div>
+      <div class="filter-group"><label for="filter-status">Status</label><select id="filter-status"><option value="all">All</option></select></div>
+      <div class="filter-group"><label for="filter-assignee">Assignee</label><select id="filter-assignee"><option value="all">All</option></select></div>
+      <button class="reset-btn" id="reset-filters">Reset</button>
+    </div>
+  </header>
+
+  <section class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Total items</div><div class="kpi-value" id="kpi-total"></div><div class="kpi-sub" id="kpi-total-sub"></div></div>
+    <div class="kpi-card"><div class="kpi-label">SP — Done</div><div class="kpi-value" id="kpi-sp-done" style="color:var(--color-done)"></div><div class="kpi-sub" id="kpi-sp-done-sub"></div></div>
+    <div class="kpi-card"><div class="kpi-label">SP — In Flight</div><div class="kpi-value" id="kpi-sp-flight" style="color:var(--color-progress)"></div><div class="kpi-sub" id="kpi-sp-flight-sub"></div></div>
+    <div class="kpi-card"><div class="kpi-label">SP — To Do (sized)</div><div class="kpi-value" id="kpi-sp-todo"></div><div class="kpi-sub" id="kpi-sp-todo-sub"></div></div>
+    <div class="kpi-card"><div class="kpi-label">Unsized items</div><div class="kpi-value" id="kpi-unsized" style="color:#b0331e"></div><div class="kpi-sub">need estimation</div></div>
+    <div class="kpi-card"><div class="kpi-label">Open PRs</div><div class="kpi-value" id="kpi-prs" style="color:var(--color-review)"></div><div class="kpi-sub" id="kpi-prs-sub">awaiting review</div></div>
+  </section>
+
+  <section class="chart-row">
+    <div class="chart-container">
+      <h3>Status distribution (by ticket count)</h3>
+      <div class="chart-canvas-wrap"><canvas id="status-chart"></canvas></div>
+    </div>
+    <div class="chart-container">
+      <h3>Story Points by track</h3>
+      <div class="chart-canvas-wrap"><canvas id="track-chart"></canvas></div>
+    </div>
+  </section>
+
+  <section class="summary-row">
+    <div class="summary-card">
+      <h3>Progress Summary</h3>
+      {{PROGRESS_SUMMARY_HTML}}
+      <p class="meta">Snapshot {{SNAPSHOT_DATE}} · Sources: {{SOURCES_LINE}} · Audience: Engineering Directors &amp; Product Managers</p>
+    </div>
+    <div class="summary-card actions">
+      <h3>Recommended Actions</h3>
+      {{RECOMMENDED_ACTIONS_HTML}}
+    </div>
+  </section>
+
+  <section class="table-section" id="table-section">
+    <h3 class="collapsible" id="table-toggle">
+      <span class="chevron">▾</span>
+      <span>All work items</span>
+      <span style="font-weight:400;color:var(--text-secondary);text-transform:none;letter-spacing:0">— click a column to sort</span>
+      <span class="collapse-meta" id="table-count"></span>
+    </h3>
+    <div id="table-wrap"></div>
+  </section>
+
+  <div class="dashboard-footer">{{INITIATIVE_TITLE}} dashboard · self-contained HTML · refresh by re-running the building-initiative-dashboard skill</div>
+</div>
+
+<script>
+const ITEMS = {{ITEMS_JSON}};
+
+const JIRA_BASE = "https://outsystemsrd.atlassian.net/browse/";
+const STATUS_ORDER = ["Definition","To Do","In Progress","In Peer Review","In Testing","Done"];
+const STATUS_COLOR = {
+  "Definition":"#9aa0a6","To Do":"#9aa0a6","In Progress":"#4C72B0",
+  "In Peer Review":"#DD8452","In Testing":"#8172B3","Done":"#55A868",
+};
+const TRACK_COLORS = ["#4C72B0","#DD8452","#C44E52","#8172B3","#937860","#444c5a","#55A868"];
+
+function statusBadgeClass(s){
+  return ({
+    "To Do":"badge-status-todo","In Progress":"badge-status-progress",
+    "In Peer Review":"badge-status-review","In Testing":"badge-status-testing",
+    "Done":"badge-status-done","Definition":"badge-status-definition",
+  })[s] || "badge-status-todo";
+}
+
+class Dashboard {
+  constructor(items){
+    this.raw = items;
+    this.filtered = items;
+    this.sortField = "key";
+    this.sortDir = "asc";
+    this.charts = {};
+    this.trackOrder = [...new Set(items.map(d=>d.track))];
+    this.init();
+  }
+  init(){
+    this.populateFilters();
+    this.bindEvents();
+    this.applyFilters();
+  }
+  populateFilters(){
+    const tracks = [...new Set(this.raw.map(d=>d.track))].sort((a,b)=>this.trackOrder.indexOf(a)-this.trackOrder.indexOf(b));
+    const statuses = [...new Set(this.raw.map(d=>d.status))].sort((a,b)=>STATUS_ORDER.indexOf(a)-STATUS_ORDER.indexOf(b));
+    const assignees = [...new Set(this.raw.map(d=>d.assignee))].sort();
+    this.fillSelect("filter-track", tracks);
+    this.fillSelect("filter-status", statuses);
+    this.fillSelect("filter-assignee", assignees);
+  }
+  fillSelect(id, values){
+    const sel = document.getElementById(id);
+    values.forEach(v=>{
+      const opt = document.createElement("option");
+      opt.value = v; opt.textContent = v;
+      sel.appendChild(opt);
+    });
+  }
+  bindEvents(){
+    ["filter-track","filter-status","filter-assignee"].forEach(id=>{
+      document.getElementById(id).addEventListener("change", ()=>this.applyFilters());
+    });
+    document.getElementById("reset-filters").addEventListener("click", ()=>{
+      ["filter-track","filter-status","filter-assignee"].forEach(id=>document.getElementById(id).value="all");
+      this.applyFilters();
+    });
+    document.getElementById("table-toggle").addEventListener("click", ()=>{
+      document.getElementById("table-section").classList.toggle("collapsed");
+    });
+  }
+  filterValue(id){
+    const v = document.getElementById(id).value;
+    return v === "all" ? null : v;
+  }
+  applyFilters(){
+    const t = this.filterValue("filter-track");
+    const s = this.filterValue("filter-status");
+    const a = this.filterValue("filter-assignee");
+    this.filtered = this.raw.filter(d=>{
+      if(t && d.track !== t) return false;
+      if(s && d.status !== s) return false;
+      if(a && d.assignee !== a) return false;
+      return true;
+    });
+    this.renderKPIs();
+    this.renderCharts();
+    this.renderTable();
+  }
+
+  renderKPIs(){
+    const f = this.filtered;
+    const sized = f.filter(d=>d.sp!=null);
+    const done = sized.filter(d=>d.status==="Done");
+    const inFlight = sized.filter(d=>["In Progress","In Peer Review","In Testing"].includes(d.status));
+    const todoSized = sized.filter(d=>d.status==="To Do" || d.status==="Definition");
+    const unsized = f.filter(d=>d.sp==null && !["Epic","Initiative"].includes(d.type));
+    const openPRs = f.filter(d=>d.prState==="OPEN");
+    const sum = arr => arr.reduce((a,d)=>a+(d.sp||0),0);
+
+    document.getElementById("kpi-total").textContent = f.length;
+    document.getElementById("kpi-total-sub").textContent = `${f.filter(d=>!["Epic","Initiative"].includes(d.type)).length} stories/tasks · ${f.filter(d=>["Epic","Initiative"].includes(d.type)).length} containers`;
+    document.getElementById("kpi-sp-done").textContent = sum(done);
+    document.getElementById("kpi-sp-done-sub").textContent = `${done.length} items completed`;
+    document.getElementById("kpi-sp-flight").textContent = sum(inFlight);
+    document.getElementById("kpi-sp-flight-sub").textContent = `${inFlight.length} items active`;
+    document.getElementById("kpi-sp-todo").textContent = sum(todoSized);
+    document.getElementById("kpi-sp-todo-sub").textContent = `${todoSized.length} items queued`;
+    document.getElementById("kpi-unsized").textContent = unsized.length;
+    document.getElementById("kpi-prs").textContent = openPRs.length;
+    document.getElementById("kpi-prs-sub").textContent = openPRs.length ? openPRs.map(d=>d.prRepo).join(" · ") : "no open PRs";
+  }
+
+  renderCharts(){
+    this.renderStatusChart();
+    this.renderTrackChart();
+  }
+  renderStatusChart(){
+    const f = this.filtered;
+    const counts = {};
+    STATUS_ORDER.forEach(s=>counts[s]=0);
+    f.forEach(d=>{ if(counts[d.status]==null) counts[d.status]=0; counts[d.status]++; });
+    const labels = Object.keys(counts).filter(k=>counts[k]>0);
+    const data = labels.map(k=>counts[k]);
+    const colors = labels.map(k=>STATUS_COLOR[k] || "#999");
+
+    if(this.charts.status){ this.charts.status.destroy(); }
+    const ctx = document.getElementById("status-chart").getContext("2d");
+    this.charts.status = new Chart(ctx, {
+      type:"doughnut",
+      data:{labels, datasets:[{data, backgroundColor:colors.map(c=>c+"D0"), borderColor:"#fff", borderWidth:2}]},
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:"58%",
+        plugins:{
+          legend:{position:"right", labels:{usePointStyle:true, padding:12, font:{size:12}}},
+          tooltip:{callbacks:{label:c=>{
+            const total = c.dataset.data.reduce((a,b)=>a+b,0);
+            const pct = total?((c.parsed/total)*100).toFixed(0):0;
+            return `${c.label}: ${c.parsed} (${pct}%)`;
+          }}}
+        }
+      }
+    });
+  }
+  renderTrackChart(){
+    const f = this.filtered.filter(d=>d.sp!=null);
+    const trackSet = [...new Set(f.map(d=>d.track))].sort((a,b)=>this.trackOrder.indexOf(a)-this.trackOrder.indexOf(b));
+    const buckets = {Done:{}, "In Flight":{}, "To Do":{}};
+    trackSet.forEach(t=>{ buckets.Done[t]=0; buckets["In Flight"][t]=0; buckets["To Do"][t]=0; });
+    f.forEach(d=>{
+      const sp = d.sp || 0;
+      if(d.status==="Done") buckets.Done[d.track]+=sp;
+      else if(["In Progress","In Peer Review","In Testing"].includes(d.status)) buckets["In Flight"][d.track]+=sp;
+      else buckets["To Do"][d.track]+=sp;
+    });
+    const datasets = [
+      {label:"Done",      data: trackSet.map(t=>buckets.Done[t]),      backgroundColor:"#55A868CC"},
+      {label:"In Flight", data: trackSet.map(t=>buckets["In Flight"][t]), backgroundColor:"#4C72B0CC"},
+      {label:"To Do",     data: trackSet.map(t=>buckets["To Do"][t]),   backgroundColor:"#9aa0a6CC"},
+    ];
+
+    if(this.charts.track){ this.charts.track.destroy(); }
+    const ctx = document.getElementById("track-chart").getContext("2d");
+    this.charts.track = new Chart(ctx, {
+      type:"bar",
+      data:{labels:trackSet, datasets},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        scales:{
+          x:{stacked:true, grid:{display:false}},
+          y:{stacked:true, beginAtZero:true, ticks:{stepSize:5}, title:{display:true, text:"Story Points"}}
+        },
+        plugins:{
+          legend:{position:"top", labels:{usePointStyle:true, padding:12, font:{size:12}}},
+          tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y} SP`}}
+        }
+      }
+    });
+  }
+
+  renderTable(){
+    const cols = [
+      {field:"key",     label:"Key",      render:d=>`<a href="${JIRA_BASE}${d.key}" target="_blank">${d.key}</a>`},
+      {field:"type",    label:"Type",     render:d=>d.type},
+      {field:"track",   label:"Track",    render:d=>`<span class="badge badge-track">${d.track}</span>`},
+      {field:"summary", label:"Summary",  render:d=>d.summary},
+      {field:"status",  label:"Status",   render:d=>`<span class="badge ${statusBadgeClass(d.status)}">${d.status}</span>`},
+      {field:"sp",      label:"SP",       render:d=>d.sp!=null?`<span class="sp-cell">${d.sp}</span>`:`<span class="sp-cell unsized">—</span>`},
+      {field:"assignee",label:"Assignee", render:d=>d.assignee==="-"?`<span class="empty">unassigned</span>`:d.assignee},
+      {field:"prRepo",  label:"PR",       render:d=>d.prUrl?`<a href="${d.prUrl}" target="_blank"><span class="badge badge-pr-${(d.prState||'open').toLowerCase()}">${d.prRepo} · ${d.prState}</span></a>`:`<span class="empty">—</span>`},
+    ];
+
+    const sorted = [...this.filtered].sort((a,b)=>{
+      const af=a[this.sortField], bf=b[this.sortField];
+      let cmp;
+      if(this.sortField==="status") cmp = STATUS_ORDER.indexOf(af)-STATUS_ORDER.indexOf(bf);
+      else if(this.sortField==="track") cmp = this.trackOrder.indexOf(af)-this.trackOrder.indexOf(bf);
+      else if(this.sortField==="sp"){
+        const av = af==null?-1:af, bv = bf==null?-1:bf;
+        cmp = av<bv?-1:av>bv?1:0;
+      } else {
+        const av=(af==null?"":String(af)).toLowerCase();
+        const bv=(bf==null?"":String(bf)).toLowerCase();
+        cmp = av<bv?-1:av>bv?1:0;
+      }
+      return this.sortDir==="asc"?cmp:-cmp;
+    });
+
+    let html = `<table class="data-table"><thead><tr>`;
+    cols.forEach(c=>{
+      const arrow = this.sortField===c.field ? (this.sortDir==="asc"?" ▲":" ▼") : "";
+      html += `<th data-field="${c.field}">${c.label}${arrow}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+    sorted.forEach(d=>{
+      html += "<tr>";
+      cols.forEach(c=>{ html += `<td>${c.render(d)}</td>`; });
+      html += "</tr>";
+    });
+    html += `</tbody></table>`;
+
+    const wrap = document.getElementById("table-wrap");
+    wrap.innerHTML = html;
+    const countEl = document.getElementById("table-count");
+    if(countEl) countEl.textContent = `${sorted.length} item${sorted.length===1?"":"s"}`;
+
+    wrap.querySelectorAll("th[data-field]").forEach(th=>{
+      th.addEventListener("click", ()=>{
+        const f = th.getAttribute("data-field");
+        if(this.sortField===f) this.sortDir = this.sortDir==="asc"?"desc":"asc";
+        else { this.sortField = f; this.sortDir = "asc"; }
+        this.renderTable();
+      });
+    });
+  }
+}
+
+const dashboard = new Dashboard(ITEMS);
+</script>
+</body>
+</html>
