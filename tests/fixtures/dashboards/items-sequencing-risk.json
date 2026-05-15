@@ -1,0 +1,16 @@
+{
+  "initiative": {
+    "key": "FAKE-200",
+    "title": "API Authentication Refactor",
+    "parent_vm": null,
+    "productboard_id": null
+  },
+  "items": [
+    {"key":"FAKE-200","type":"Epic","summary":"API Authentication Refactor","status":"To Do","sp":null,"assignee":"-","track":"Auth","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-201","type":"Solution Design","summary":"Auth LLD","status":"To Do","sp":2,"assignee":"alice","track":"Auth","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-202","type":"Story","summary":"M1 — JWT validator","status":"In Progress","sp":3,"assignee":"bob","track":"Auth","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-203","type":"Story","summary":"M2 — Wiring","status":"To Do","sp":3,"assignee":"bob","track":"Auth","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-204","type":"Story","summary":"M3 — Tests","status":"To Do","sp":5,"assignee":"bob","track":"Auth","prUrl":null,"prState":null,"prRepo":null}
+  ],
+  "notes": "FAKE-202 (M1) is In Progress while FAKE-201 (its LLD) is still To Do. This is a sequencing risk that the skill should flag as Amber."
+}

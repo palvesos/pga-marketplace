@@ -1,0 +1,124 @@
+test_type: "effectiveness"
+name: "building-initiative-dashboard-validation"
+description: "Validates that building-initiative-dashboard produces complete, executive-quality HTML dashboards with defensible RAG summaries and concrete actions."
+
+# Scenario 1: Happy path — mid-flight initiative with 2 tracks, 1 open PR
+scenario_1:
+  name: "mid_flight_initiative_synthesis"
+
+  read_references:
+    - reference/dashboard-template.html
+
+  codebase:
+    fixtures:
+      - dashboards/items-mid-flight.json
+
+  prompt: |
+    Build an initiative progress dashboard for the data in items-mid-flight.json.
+    The Jira/PR data is already fetched and provided — skip Steps 1–3 of the
+    skill (no acli/gh calls needed) and start at Step 4 (data model
+    synthesis). Render the dashboard.html using the skill's template and
+    write it to dashboard.html in the working directory. Do NOT open it.
+
+  validation:
+    prerequisites:
+      - point: "Dashboard file produced"
+        description: "A file named dashboard.html is created in the working directory."
+
+      - point: "All template placeholders filled"
+        description: "The generated dashboard.html contains zero remaining `{{...}}` placeholder tokens."
+
+      - point: "Items JSON embedded"
+        description: "The generated dashboard.html contains a JavaScript ITEMS array with all 10 items from the fixture (FAKE-100 through FAKE-109)."
+
+    skill_scoring:
+      - point: "Progress Summary uses bullets"
+        description: "The Progress Summary section is rendered as a <ul> with <li> bullets, not as paragraphs."
+
+      - point: "RAG status appears at the headline"
+        description: "The first bullet of Progress Summary states an overall RAG status (Green, Amber, On Track, or Red) — not buried mid-summary."
+
+      - point: "SP roll-up covers all four buckets"
+        description: "Progress Summary or KPIs explicitly mention Done, In Flight, To Do (sized), AND Unsized — all four buckets, not just three."
+
+      - point: "Per-track RAG with justifications"
+        description: "Each main track (RQ01, RQ02) has its own RAG with a one-line reason an EM could repeat verbally."
+
+      - point: "Recommended Actions are concrete and assignable"
+        description: "At least 4 of the Recommended Actions name a specific Jira key, PR, or owner — not vague guidance like 'improve the process'."
+
+      - point: "PR linkage surfaced"
+        description: "The dashboard mentions the open PR (repo#1) — in the table, KPIs, or Recommended Actions."
+
+# Scenario 2: Sequencing risk — M1 in progress before LLD done
+scenario_2:
+  name: "sequencing_risk_detection"
+
+  read_references: []
+
+  codebase:
+    fixtures:
+      - dashboards/items-sequencing-risk.json
+
+  prompt: |
+    Build an initiative progress dashboard for the data in items-sequencing-risk.json.
+    Skip data fetching — go straight to Step 4 onwards. Write to dashboard.html.
+
+  validation:
+    prerequisites:
+      - point: "Dashboard file produced"
+        description: "A file named dashboard.html is created."
+
+      - point: "All template placeholders filled"
+        description: "The generated dashboard.html contains zero remaining `{{...}}` placeholder tokens."
+
+    skill_scoring:
+      - point: "Sequencing risk explicitly called out"
+        description: "Progress Summary or Recommended Actions explicitly notes that FAKE-202 (M1) is In Progress while FAKE-201 (its LLD) is still To Do."
+
+      - point: "Risk drives the RAG colour"
+        description: "Auth track is rated Amber (or equivalent yellow/warning) with the LLD-sequencing risk as the justification."
+
+      - point: "Recommended action targets the risk"
+        description: "At least one Recommended Action proposes landing FAKE-201 (the LLD) to clear the risk."
+
+      - point: "Action is owner-targeted"
+        description: "The recommended action names the owner (alice for FAKE-201, or the assignee for FAKE-202) — not addressed to no one."
+
+# Scenario 3: Early-stage initiative — mostly unsized, no PRs
+scenario_3:
+  name: "early_stage_honest_reporting"
+
+  read_references: []
+
+  codebase:
+    fixtures:
+      - dashboards/items-early-stage.json
+
+  prompt: |
+    Build an initiative progress dashboard for the data in items-early-stage.json.
+    Skip data fetching — start at Step 4. Write to dashboard.html.
+
+  validation:
+    prerequisites:
+      - point: "Dashboard file produced"
+        description: "A file named dashboard.html is created."
+
+      - point: "All template placeholders filled"
+        description: "The generated dashboard.html contains zero remaining `{{...}}` placeholder tokens."
+
+    skill_scoring:
+      - point: "Reports unsized as a known unknown"
+        description: "Progress Summary explicitly mentions that some items (the Spike, Threat Model, sibling Epic) are unsized; does NOT claim a precise completion percentage of the whole initiative."
+
+      - point: "Headline reflects pre-implementation state"
+        description: "Overall RAG is Amber (not Green) AND the headline explicitly notes that the implementation epic is still In Design / no code shipped."
+
+      - point: "Does not fabricate PR data"
+        description: "Dashboard does not invent PR links, CI status, or review status — Open PRs KPI is 0 and no PR badges appear in the table."
+
+      - point: "Customer-value context preserved if present"
+        description: "If customer or strategic context is provided in the initiative description (e.g. ARR, customer count), it is mentioned in the Progress Summary; if absent, no fabricated figures appear."
+
+      - point: "Calls out the implementation gap as the next milestone"
+        description: "Recommended Actions or the 'Next milestone' bullet identifies breaking down the sibling implementation epic (FAKE-303) as the gating step."

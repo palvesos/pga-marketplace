@@ -1,0 +1,20 @@
+{
+  "initiative": {
+    "key": "FAKE-100",
+    "title": "Multi-tenant Connectivity Hardening",
+    "parent_vm": "VM-9",
+    "productboard_id": null
+  },
+  "items": [
+    {"key":"FAKE-100","type":"Epic","summary":"Multi-tenant Connectivity Hardening","status":"To Do","sp":null,"assignee":"-","track":"Charlie","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-101","type":"Discovery","summary":"Solution discovery and WBS definition","status":"Done","sp":2,"assignee":"alice","track":"Charlie","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-102","type":"Solution Design","summary":"[RQ01] LLD","status":"Done","sp":2,"assignee":"alice","track":"RQ01","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-103","type":"Solution Design","summary":"[RQ02] LLD","status":"Done","sp":2,"assignee":"alice","track":"RQ02","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-104","type":"Story","summary":"[RQ01] M1 — Validator service","status":"In Peer Review","sp":2,"assignee":"bob","track":"RQ01","prUrl":"https://github.com/org/repo/pull/1","prState":"OPEN","prRepo":"repo#1"},
+    {"key":"FAKE-105","type":"Story","summary":"[RQ01] M2 — Wiring","status":"To Do","sp":3,"assignee":"bob","track":"RQ01","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-106","type":"Story","summary":"[RQ01] M3 — Tests","status":"To Do","sp":5,"assignee":"bob","track":"RQ01","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-107","type":"Story","summary":"[RQ02] M1 — Cooldown service","status":"In Progress","sp":3,"assignee":"carol","track":"RQ02","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-108","type":"Story","summary":"[RQ02] M2 — Wire cooldown","status":"To Do","sp":2,"assignee":"carol","track":"RQ02","prUrl":null,"prState":null,"prRepo":null},
+    {"key":"FAKE-109","type":"Story","summary":"Threat Model","status":"To Do","sp":null,"assignee":"-","track":"Charlie","prUrl":null,"prState":null,"prRepo":null}
+  ]
+}
