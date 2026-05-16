@@ -164,7 +164,7 @@ The dashboard has **four narrative blocks**. Author all of them.
 #### 5.1 Hero row (top of dashboard, 3 cards)
 
 **Card 1 — Status traffic light**
-- `RAG_STATUS`: one of `green`, `amber`, `red` (lowercase, no quotes)
+- `RAG_STATUS`: one of `green`, `yellow`, `red` (lowercase, no quotes)
 - `RAG_LABEL`: short label, e.g. `On Track`, `At Risk`, `Off Track`,
   `Pre-implementation`
 - `RAG_HEADLINE`: one short sentence explaining the colour
@@ -191,7 +191,7 @@ No bullets in this card. Plain `<p>` only. Keep it under ~80 words total.
 Bulleted executive prose for Engineering Directors and PMs. 6-10 bullets:
 - Headline RAG with a one-line summary
 - Quantified scope progress (% delivered / in flight / remaining of sized SP)
-- Per-track RAG (Green/Amber/Red with one-line justification each)
+- Per-track RAG (Green/Yellow/Red with one-line justification each)
 - Cross-team execution health
 - Open risks for leadership attention (as a nested bullet group)
 - Next milestone (the one gate that clears the biggest current flag)
@@ -210,7 +210,7 @@ or owner — no vague guidance.
    - `{{INITIATIVE_SUBTITLE}}` — Productboard ID, Confluence links, Jira epic
    - `{{ITEMS_JSON}}` — the JSON array from Step 4
    - **Hero row (from Step 5.1):**
-     - `{{RAG_STATUS}}` — `green` | `amber` | `red` (lowercase)
+     - `{{RAG_STATUS}}` — `green` | `yellow` | `red` (lowercase)
      - `{{RAG_LABEL}}` — e.g. `On Track`, `At Risk`, `Off Track`
      - `{{RAG_HEADLINE}}` — one-sentence justification
      - `{{EXEC_STATUS_REPORT_HTML}}` — 1-2 `<p>` paragraphs, no bullets
@@ -232,11 +232,11 @@ or owner — no vague guidance.
 2. **Always show the SP roll-up explicitly** — Done / In Flight /
    To Do (sized) / Unsized. Three buckets without "Unsized" lies about scope.
 
-3. **RAG must be defensible** — Green/Amber/Red per track must have a
-   one-line reason that an EM can repeat in a meeting. No "Amber because vibes".
+3. **RAG must be defensible** — Green/Yellow/Red per track must have a
+   one-line reason that an EM can repeat in a meeting. No "Yellow because vibes".
 
 4. **Sequencing risks are first-class** — if M-stories are In Progress before
-   their LLD is Done, call it out as Amber in the summary.
+   their LLD is Done, call it out as Yellow in the summary.
 
 5. **Never invent data** — if PB or Confluence wasn't queryable, omit the
    section rather than fabricating it.

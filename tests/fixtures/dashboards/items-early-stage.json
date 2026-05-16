@@ -13,5 +13,5 @@
     {"key":"FAKE-304","type":"Spike","summary":"Investigate config changes","status":"In Progress","sp":null,"assignee":"bob","track":"Sibling","prUrl":null,"prState":null,"prRepo":null},
     {"key":"FAKE-305","type":"Threat Model","summary":"VM Threat Model","status":"To Do","sp":null,"assignee":"-","track":"VM Context","prUrl":null,"prState":null,"prRepo":null}
   ],
-  "notes": "Early-stage initiative — only 8 SP sized, implementation epic still In Design, no PRs yet. Skill should report Amber and call out the unscoped implementation."
+  "notes": "Early-stage initiative — only 8 SP sized, implementation epic still In Design, no PRs yet. Skill should report Yellow and call out the unscoped implementation."
 }

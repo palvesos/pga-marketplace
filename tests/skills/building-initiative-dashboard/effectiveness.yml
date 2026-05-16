@@ -36,7 +36,7 @@ scenario_1:
         description: "The Progress Summary section is rendered as a <ul> with <li> bullets, not as paragraphs."
 
       - point: "RAG status appears at the headline"
-        description: "The first bullet of Progress Summary states an overall RAG status (Green, Amber, On Track, or Red) — not buried mid-summary."
+        description: "The first bullet of Progress Summary states an overall RAG status (Green, Yellow, On Track, or Red) — not buried mid-summary."
 
       - point: "SP roll-up covers all four buckets"
         description: "Progress Summary or KPIs explicitly mention Done, In Flight, To Do (sized), AND Unsized — all four buckets, not just three."
@@ -77,7 +77,7 @@ scenario_2:
         description: "Progress Summary or Recommended Actions explicitly notes that FAKE-202 (M1) is In Progress while FAKE-201 (its LLD) is still To Do."
 
       - point: "Risk drives the RAG colour"
-        description: "Auth track is rated Amber (or equivalent yellow/warning) with the LLD-sequencing risk as the justification."
+        description: "Auth track is rated Yellow (or equivalent yellow/warning) with the LLD-sequencing risk as the justification."
 
       - point: "Recommended action targets the risk"
         description: "At least one Recommended Action proposes landing FAKE-201 (the LLD) to clear the risk."
@@ -112,7 +112,7 @@ scenario_3:
         description: "Progress Summary explicitly mentions that some items (the Spike, Threat Model, sibling Epic) are unsized; does NOT claim a precise completion percentage of the whole initiative."
 
       - point: "Headline reflects pre-implementation state"
-        description: "Overall RAG is Amber (not Green) AND the headline explicitly notes that the implementation epic is still In Design / no code shipped."
+        description: "Overall RAG is Yellow (not Green) AND the headline explicitly notes that the implementation epic is still In Design / no code shipped."
 
       - point: "Does not fabricate PR data"
         description: "Dashboard does not invent PR links, CI status, or review status — Open PRs KPI is 0 and no PR badges appear in the table."
