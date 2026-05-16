@@ -1,7 +1,7 @@
 {
   "name": "initiative-dashboards",
   "description": "Tooling for Engineering Managers and Product Managers to summarise the progress of an initiative or epic into a self-contained HTML dashboard.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "Paulo Alves",
     "email": "paulo.alves@outsystems.com"

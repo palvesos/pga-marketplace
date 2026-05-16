@@ -263,9 +263,11 @@ or owner — no vague guidance.
 2. Substitute the placeholders:
    - `{{INITIATIVE_TITLE}}` — e.g. "PU-M4.13.1 — Private O11 LifeTime-to-ODC Connectivity"
    - `{{INITIATIVE_SUBTITLE}}` — Productboard link, Confluence links, Jira epic.
-     **Productboard ID must render as a clickable link.** Default URL
-     pattern: `https://outsystems.productboard.com/features/<uuid>`.
-     If the workspace uses a different pattern, override per-tenant.
+     **Productboard ID must render as a clickable link.** URL pattern
+     for OutSystems: `https://outsystems.productboard.com/entity-detail/features/<uuid>`.
+     If the parent Jira ticket has a Productboard URL in its
+     `customfield_15504` (or similar Productboard-link custom field),
+     prefer that URL verbatim over constructing one from the UUID.
    - `{{ITEMS_JSON}}` — the JSON array from Step 4
    - **Hero row (from Step 5.1):**
      - `{{RAG_STATUS}}` — `green` | `yellow` | `red` (lowercase)
