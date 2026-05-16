@@ -40,6 +40,28 @@
   .reset-btn{padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:transparent;color:var(--text-on-dark);font-size:12px;cursor:pointer}
   .reset-btn:hover{background:rgba(255,255,255,.1)}
 
+  .hero-row{display:grid;grid-template-columns:minmax(220px,1fr) 2fr 1.5fr;gap:var(--gap);margin-bottom:var(--gap)}
+  .hero-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+  .hero-label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  .rag-light{display:flex;align-items:center;gap:16px;margin-top:4px}
+  .rag-dot{width:54px;height:54px;border-radius:50%;flex-shrink:0;display:inline-block}
+  .rag-dot-green{background:radial-gradient(circle at 30% 30%, #6dd687, #28a745 75%);box-shadow:0 0 22px rgba(40,167,69,.35),inset -3px -3px 6px rgba(0,0,0,.12)}
+  .rag-dot-amber{background:radial-gradient(circle at 30% 30%, #fcb96a, #DD8452 75%);box-shadow:0 0 22px rgba(221,132,82,.35),inset -3px -3px 6px rgba(0,0,0,.12)}
+  .rag-dot-red{background:radial-gradient(circle at 30% 30%, #f0807e, #C44E52 75%);box-shadow:0 0 22px rgba(196,78,82,.35),inset -3px -3px 6px rgba(0,0,0,.12)}
+  .rag-label{font-size:22px;font-weight:700;letter-spacing:.3px;line-height:1.1}
+  .rag-sublabel{font-size:13px;color:var(--text-secondary);margin-top:2px}
+  .exec-report p{font-size:13.5px;line-height:1.6;margin-bottom:8px}
+  .exec-report p:last-child{margin-bottom:0}
+  .hl-section{margin-top:2px}
+  .hl-section + .hl-section{margin-top:10px}
+  .hl-section h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+  .hl-section.highlights h4{color:#1f6b3a}
+  .hl-section.lowlights h4{color:#a13030}
+  .hl-section.highlights h4::before{content:"✓";font-weight:900}
+  .hl-section.lowlights h4::before{content:"!";font-weight:900;background:#a13030;color:#fff;width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+  .hl-section ul{padding-left:18px;font-size:12.5px;line-height:1.5;margin:0}
+  .hl-section li{margin-bottom:3px}
+
   .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--gap);margin-bottom:var(--gap)}
   .kpi-card{background:var(--bg-card);border-radius:var(--radius);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border)}
   .kpi-label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
@@ -94,6 +116,7 @@
   .dashboard-footer{margin-top:var(--gap);font-size:11px;color:var(--text-secondary);text-align:center;padding:10px}
 
   @media (max-width:960px){
+    .hero-row{grid-template-columns:1fr}
     .chart-row{grid-template-columns:1fr}
     .summary-row{grid-template-columns:1fr}
     .kpi-row{grid-template-columns:repeat(2,1fr)}
@@ -102,7 +125,7 @@
     body{background:white}
     .dashboard-container{max-width:none}
     .filters{display:none}
-    .chart-container,.kpi-card,.summary-card,.table-section{box-shadow:none;border:1px solid #ddd}
+    .chart-container,.kpi-card,.summary-card,.table-section,.hero-card{box-shadow:none;border:1px solid #ddd}
   }
 </style>
 </head>
@@ -121,6 +144,27 @@
       <button class="reset-btn" id="reset-filters">Reset</button>
     </div>
   </header>
+
+  <section class="hero-row">
+    <div class="hero-card">
+      <div class="hero-label">Status</div>
+      <div class="rag-light">
+        <span class="rag-dot rag-dot-{{RAG_STATUS}}"></span>
+        <div>
+          <div class="rag-label">{{RAG_LABEL}}</div>
+          <div class="rag-sublabel">{{RAG_HEADLINE}}</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-card exec-report">
+      <div class="hero-label">Executive Status</div>
+      {{EXEC_STATUS_REPORT_HTML}}
+    </div>
+    <div class="hero-card">
+      <div class="hero-label">Highlights / Lowlights</div>
+      {{HIGHLIGHTS_LOWLIGHTS_HTML}}
+    </div>
+  </section>
 
   <section class="kpi-row">
     <div class="kpi-card"><div class="kpi-label">Total items</div><div class="kpi-value" id="kpi-total"></div><div class="kpi-sub" id="kpi-total-sub"></div></div>

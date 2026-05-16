@@ -157,20 +157,49 @@ Build a JSON array of items with this shape:
 
 When in doubt, ask the user to confirm the track buckets before rendering.
 
-### Step 5 — Draft Progress Summary & Recommended Actions
+### Step 5 — Draft the executive narrative
 
-Write both as **bulleted executive prose** for Engineering Directors and
-Product Managers. Aim for 6-10 bullets each.
+The dashboard has **four narrative blocks**. Author all of them.
 
-**Progress Summary** should cover:
-- Headline RAG status with a one-line headline
+#### 5.1 Hero row (top of dashboard, 3 cards)
+
+**Card 1 — Status traffic light**
+- `RAG_STATUS`: one of `green`, `amber`, `red` (lowercase, no quotes)
+- `RAG_LABEL`: short label, e.g. `On Track`, `At Risk`, `Off Track`,
+  `Pre-implementation`
+- `RAG_HEADLINE`: one short sentence explaining the colour
+
+**Card 2 — Executive Status** (1-2 short paragraphs, **no more than 2**)
+- Paragraph 1: where the initiative stands today (delivery posture,
+  what's shipped, what's blocked)
+- Paragraph 2 (optional): the most important context an exec needs —
+  customer impact, sequencing, the next gating event
+
+No bullets in this card. Plain `<p>` only. Keep it under ~80 words total.
+
+**Card 3 — Highlights / Lowlights**
+- 2-4 highlights (`<ul>` under an `<h4>Highlights</h4>`) — recent wins,
+  good news, things to celebrate
+- 2-4 lowlights (`<ul>` under an `<h4>Lowlights</h4>`) — risks, blockers,
+  things slipping
+- Both sections wrapped in `<div class="hl-section highlights">` /
+  `<div class="hl-section lowlights">` so the CSS picks up the right
+  badges
+
+#### 5.2 Progress Summary (bottom row, left card)
+
+Bulleted executive prose for Engineering Directors and PMs. 6-10 bullets:
+- Headline RAG with a one-line summary
 - Quantified scope progress (% delivered / in flight / remaining of sized SP)
 - Per-track RAG (Green/Amber/Red with one-line justification each)
 - Cross-team execution health
 - Open risks for leadership attention (as a nested bullet group)
 - Next milestone (the one gate that clears the biggest current flag)
 
-**Recommended Actions** should be 5-7 concrete, owner-assignable bullets.
+#### 5.3 Recommended Actions (bottom row, right card)
+
+5-7 concrete, owner-assignable bullets. Each should name a Jira key, PR,
+or owner — no vague guidance.
 
 ### Step 6 — Render and open the dashboard
 
@@ -180,6 +209,12 @@ Product Managers. Aim for 6-10 bullets each.
    - `{{INITIATIVE_TITLE}}` — e.g. "PU-M4.13.1 — Private O11 LifeTime-to-ODC Connectivity"
    - `{{INITIATIVE_SUBTITLE}}` — Productboard ID, Confluence links, Jira epic
    - `{{ITEMS_JSON}}` — the JSON array from Step 4
+   - **Hero row (from Step 5.1):**
+     - `{{RAG_STATUS}}` — `green` | `amber` | `red` (lowercase)
+     - `{{RAG_LABEL}}` — e.g. `On Track`, `At Risk`, `Off Track`
+     - `{{RAG_HEADLINE}}` — one-sentence justification
+     - `{{EXEC_STATUS_REPORT_HTML}}` — 1-2 `<p>` paragraphs, no bullets
+     - `{{HIGHLIGHTS_LOWLIGHTS_HTML}}` — two `<div class="hl-section …">` blocks
    - `{{PROGRESS_SUMMARY_HTML}}` — `<ul>...</ul>` of bullets
    - `{{RECOMMENDED_ACTIONS_HTML}}` — `<ul>...</ul>` of bullets
    - `{{SNAPSHOT_DATE}}` — today's date (YYYY-MM-DD)
