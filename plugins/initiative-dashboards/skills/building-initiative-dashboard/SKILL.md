@@ -141,21 +141,38 @@ Build a JSON array of items with this shape:
   type: "Story",
   summary: "...",
   status: "In Progress",
-  sp: 2,                 // null if unsized
-  assignee: "user@x",    // "-" if unassigned
-  track: "RQ01",         // derived from parent epic or summary tag
-  prUrl: "https://...",  // null if no PR
-  prState: "OPEN",       // null if no PR
-  prRepo: "Repo#473"     // null if no PR
+  sp: 2,                       // null if unsized
+  assignee: "user@x",          // "-" if unassigned
+  track: "RQ01",               // workstream — derived from parent epic or summary tag
+  team: "Unification Charlie", // engineering team — derived from project prefix
+  prUrl: "https://...",        // null if no PR
+  prState: "OPEN",             // null if no PR
+  prRepo: "Repo#473"           // null if no PR
 }
 ```
 
-**Track classification** is the trickiest derivation. Look at:
+**Track classification** (workstream / requirement bucket):
 - Parent / Epic Link grouping
 - Summary tags like `[RQ01]`, `[RQ02]`
-- Project key for cross-team work (e.g. `RDUCO-*` → "X-Team")
+- Use a sensible "context" bucket for parent VMs or unrelated context
 
-When in doubt, ask the user to confirm the track buckets before rendering.
+**Team classification** (engineering team / Jira project owner):
+Derive from the Jira project prefix using this default mapping (extend
+as needed):
+
+| Prefix | Team |
+|---|---|
+| RDUCH | Unification Charlie |
+| RDUCO | Unification Consoles |
+| RDUCV | Unification Vega |
+| RDUC* (other) | Unification \<other\> |
+| RPOR | Portfolio |
+| RDSHDT | Self-Hosted DT |
+| RDSD | Solution Design |
+| (unknown) | use the prefix verbatim |
+
+When in doubt, ask the user to confirm the track and team mappings
+before rendering.
 
 ### Step 5 — Draft the executive narrative
 
@@ -245,7 +262,10 @@ or owner — no vague guidance.
    [reference/dashboard-template.html](reference/dashboard-template.html)
 2. Substitute the placeholders:
    - `{{INITIATIVE_TITLE}}` — e.g. "PU-M4.13.1 — Private O11 LifeTime-to-ODC Connectivity"
-   - `{{INITIATIVE_SUBTITLE}}` — Productboard ID, Confluence links, Jira epic
+   - `{{INITIATIVE_SUBTITLE}}` — Productboard link, Confluence links, Jira epic.
+     **Productboard ID must render as a clickable link.** Default URL
+     pattern: `https://outsystems.productboard.com/features/<uuid>`.
+     If the workspace uses a different pattern, override per-tenant.
    - `{{ITEMS_JSON}}` — the JSON array from Step 4
    - **Hero row (from Step 5.1):**
      - `{{RAG_STATUS}}` — `green` | `yellow` | `red` (lowercase)
@@ -257,6 +277,12 @@ or owner — no vague guidance.
    - `{{RECOMMENDED_ACTIONS_HTML}}` — `<ul>...</ul>` of bullets
    - `{{SNAPSHOT_DATE}}` — today's date (YYYY-MM-DD)
    - `{{SOURCES_LINE}}` — comma-separated list of sources actually queried
+**Filters in the dashboard header (fixed set):**
+- **Track** — workstream filter, populated from `item.track`
+- **Team** — engineering team filter, populated from `item.team`
+- No Status filter, no Assignee filter (both removed; that detail is
+  visible in the item table and the doughnut chart).
+
 3. Write to `<INITIATIVE_FOLDER_OR_CWD>/dashboard.html`
 4. Open it: `open <path>` (macOS)
 5. Tell the user the path and what the dashboard contains

@@ -139,8 +139,7 @@
     </div>
     <div class="filters">
       <div class="filter-group"><label for="filter-track">Track</label><select id="filter-track"><option value="all">All</option></select></div>
-      <div class="filter-group"><label for="filter-status">Status</label><select id="filter-status"><option value="all">All</option></select></div>
-      <div class="filter-group"><label for="filter-assignee">Assignee</label><select id="filter-assignee"><option value="all">All</option></select></div>
+      <div class="filter-group"><label for="filter-team">Team</label><select id="filter-team"><option value="all">All</option></select></div>
       <button class="reset-btn" id="reset-filters">Reset</button>
     </div>
   </header>
@@ -247,11 +246,9 @@ class Dashboard {
   }
   populateFilters(){
     const tracks = [...new Set(this.raw.map(d=>d.track))].sort((a,b)=>this.trackOrder.indexOf(a)-this.trackOrder.indexOf(b));
-    const statuses = [...new Set(this.raw.map(d=>d.status))].sort((a,b)=>STATUS_ORDER.indexOf(a)-STATUS_ORDER.indexOf(b));
-    const assignees = [...new Set(this.raw.map(d=>d.assignee))].sort();
+    const teams = [...new Set(this.raw.map(d=>d.team).filter(Boolean))].sort();
     this.fillSelect("filter-track", tracks);
-    this.fillSelect("filter-status", statuses);
-    this.fillSelect("filter-assignee", assignees);
+    this.fillSelect("filter-team", teams);
   }
   fillSelect(id, values){
     const sel = document.getElementById(id);
@@ -262,11 +259,11 @@ class Dashboard {
     });
   }
   bindEvents(){
-    ["filter-track","filter-status","filter-assignee"].forEach(id=>{
+    ["filter-track","filter-team"].forEach(id=>{
       document.getElementById(id).addEventListener("change", ()=>this.applyFilters());
     });
     document.getElementById("reset-filters").addEventListener("click", ()=>{
-      ["filter-track","filter-status","filter-assignee"].forEach(id=>document.getElementById(id).value="all");
+      ["filter-track","filter-team"].forEach(id=>document.getElementById(id).value="all");
       this.applyFilters();
     });
     document.getElementById("table-toggle").addEventListener("click", ()=>{
@@ -279,12 +276,10 @@ class Dashboard {
   }
   applyFilters(){
     const t = this.filterValue("filter-track");
-    const s = this.filterValue("filter-status");
-    const a = this.filterValue("filter-assignee");
+    const team = this.filterValue("filter-team");
     this.filtered = this.raw.filter(d=>{
       if(t && d.track !== t) return false;
-      if(s && d.status !== s) return false;
-      if(a && d.assignee !== a) return false;
+      if(team && d.team !== team) return false;
       return true;
     });
     this.renderKPIs();
@@ -387,6 +382,7 @@ class Dashboard {
       {field:"key",     label:"Key",      render:d=>`<a href="${JIRA_BASE}${d.key}" target="_blank">${d.key}</a>`},
       {field:"type",    label:"Type",     render:d=>d.type},
       {field:"track",   label:"Track",    render:d=>`<span class="badge badge-track">${d.track}</span>`},
+      {field:"team",    label:"Team",     render:d=>d.team?`<span class="badge badge-track">${d.team}</span>`:`<span class="empty">—</span>`},
       {field:"summary", label:"Summary",  render:d=>d.summary},
       {field:"status",  label:"Status",   render:d=>`<span class="badge ${statusBadgeClass(d.status)}">${d.status}</span>`},
       {field:"sp",      label:"SP",       render:d=>d.sp!=null?`<span class="sp-cell">${d.sp}</span>`:`<span class="sp-cell unsized">—</span>`},
