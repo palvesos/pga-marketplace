@@ -170,12 +170,32 @@ The dashboard has **four narrative blocks**. Author all of them.
 - `RAG_HEADLINE`: one short sentence explaining the colour
 
 **Card 2 — Executive Status** (1-2 short paragraphs, **no more than 2**)
-- Paragraph 1: where the initiative stands today (delivery posture,
-  what's shipped, what's blocked)
-- Paragraph 2 (optional): the most important context an exec needs —
-  customer impact, sequencing, the next gating event
 
-No bullets in this card. Plain `<p>` only. Keep it under ~80 words total.
+**Voice and audience.** Written as if by an **Engineering Director**
+presenting to **C-level Leadership** and **Product Management Leadership**.
+Strategic, outcome-oriented, calm. The reader is not in the day-to-day.
+
+**Content rules:**
+- **DO** name the **teams** involved and describe their progress at the
+  workstream level (e.g. "Unification Charlie closed out the design
+  phase for RQ01 and RQ02 and has started implementation; Unification
+  Consoles is delivering the dependent Portal changes").
+- **DO** frame the watch items as **open design questions or pending
+  decisions** that leadership can help unblock (e.g. "the third
+  requirement still lacks an approved design", "scope of validation
+  pending alignment between Team A and Team B").
+- **DO NOT** mention PR numbers, PR review state, Jira ticket keys, or
+  ticket-level status. That detail lives in the Progress Summary and the
+  table below.
+- **DO NOT** use shorthand like "M1 in review" or "RDUCH-183 in peer review".
+- Paragraph 1: where the initiative stands today at the **team /
+  workstream level**, plus the strategic outcome of the most recent
+  delivery phase.
+- Paragraph 2 (optional): the **open design questions or decisions**
+  worth leadership's attention, with the implication if they're not
+  resolved.
+
+No bullets in this card. Plain `<p>` only. Keep it under ~100 words total.
 
 **Card 3 — Highlights / Lowlights**
 - 2-4 highlights (`<ul>` under an `<h4>Highlights</h4>`) — recent wins,
