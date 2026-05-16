@@ -50,6 +50,12 @@ scenario_1:
       - point: "PR linkage surfaced"
         description: "The dashboard mentions the open PR (repo#1) — in the table, KPIs, or Recommended Actions."
 
+      - point: "Executive Status is team-focused, not ticket-focused"
+        description: "The {{EXEC_STATUS_REPORT_HTML}} content names at least one team (e.g. a track owner or workstream) and describes workstream-level progress. The text contains zero Jira-style ticket keys (regex `[A-Z]{2,}-\\d+`) and zero PR references (e.g. `#NNN`, `PR #NNN`, `repo#NNN`)."
+
+      - point: "Executive Status watch items frame open design questions"
+        description: "Paragraph 2 of the Executive Status (if present) frames its watch items as open design questions or pending decisions (e.g. 'pending alignment', 'no approved design', 'decision required'), not as Jira hygiene issues, review-SLA complaints, or assignment gaps."
+
 # Scenario 2: Sequencing risk — M1 in progress before LLD done
 scenario_2:
   name: "sequencing_risk_detection"
