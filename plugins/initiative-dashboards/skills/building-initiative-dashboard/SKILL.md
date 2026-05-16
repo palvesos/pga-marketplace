@@ -169,10 +169,15 @@ The dashboard has **four narrative blocks**. Author all of them.
   `Pre-implementation`
 - `RAG_HEADLINE`: one short sentence explaining the colour
 
-**Card 2 — Executive Status** (1-2 short paragraphs, **no more than 2**)
+**Card 2 — Executive Status** (3-5 short bullets)
 
-**Hard limit: 60 words total** across both paragraphs. Count every word
+**Hard limit: 60 words total** across all bullets. Count every word
 in the rendered text. If over, cut — don't soften the constraint.
+
+Use a `<ul>` of `<li>` bullets. Each bullet is one factual sentence.
+Group team-progress bullets first, then open-question bullets prefixed
+with `Open question:` (or `Open decision:`) so the reader can scan
+progress vs. risks at a glance.
 
 **Voice and audience.** Written as if by an **Engineering Director**
 presenting to **C-level Leadership** and **Product Management Leadership**.
@@ -199,12 +204,10 @@ Strategic, outcome-oriented, calm. The reader is not in the day-to-day.
   ticket-level status. That detail lives in the Progress Summary and the
   table below.
 - **DO NOT** use shorthand like "M1 in review" or "RDUCH-183 in peer review".
-- Paragraph 1: where the initiative stands today at the **team /
-  workstream level**.
-- Paragraph 2 (optional): the **open design questions or decisions**
-  worth leadership's attention.
-
-No bullets. Plain `<p>` only.
+- **Bullets 1-3: team / workstream progress** — what each named team
+  did most recently. Keep each bullet to a single sentence.
+- **Bullets 4-5: open design questions or decisions** — prefix with
+  `Open question:` or `Open decision:` for scannability.
 
 **Card 3 — Highlights / Lowlights**
 - 2-4 highlights (`<ul>` under an `<h4>Highlights</h4>`) — recent wins,
