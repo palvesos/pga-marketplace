@@ -216,6 +216,10 @@ Strategic, outcome-oriented, calm. The reader is not in the day-to-day.
   most important risks, blockers, or slips. **Hard cap: 3.**
 - If more than 3 candidates exist, pick the highest-impact ones for an
   executive audience and drop the rest. Don't soften — cut.
+- **DO NOT** include PR idle / review-SLA observations such as "PRs idle
+  in review for >24h" or "review SLA breached". PR review hygiene
+  belongs in the Progress Summary below, not in the hero. The same rule
+  applies to all three hero cards (RAG, Executive Status, and this one).
 - Both sections wrapped in `<div class="hl-section highlights">` /
   `<div class="hl-section lowlights">` so the CSS picks up the right
   badges.

@@ -65,6 +65,9 @@ scenario_1:
       - point: "Highlights / Lowlights capped at 3 bullets each"
         description: "Inside {{HIGHLIGHTS_LOWLIGHTS_HTML}}, the <ul> under <h4>Highlights</h4> contains at most 3 <li> items, and the <ul> under <h4>Lowlights</h4> contains at most 3 <li> items."
 
+      - point: "Hero cards omit PR idle / review-SLA observations"
+        description: "None of the three hero cards (RAG, Executive Status, Highlights/Lowlights) contain phrasing about PR review SLA or idle PRs. Banned phrases include 'idle in review', 'review SLA', 'PRs idle', 'awaiting review for', 'sitting in review', 'review pileup'. PR review hygiene may appear in the Progress Summary further down — but not in the hero row."
+
 # Scenario 2: Sequencing risk — M1 in progress before LLD done
 scenario_2:
   name: "sequencing_risk_detection"
