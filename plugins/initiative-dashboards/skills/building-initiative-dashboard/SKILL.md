@@ -171,7 +171,7 @@ The dashboard has **four narrative blocks**. Author all of them.
 
 **Card 2 — Executive Status** (1-2 short paragraphs, **no more than 2**)
 
-**Hard limit: 100 words total** across both paragraphs. Count every word
+**Hard limit: 60 words total** across both paragraphs. Count every word
 in the rendered text. If over, cut — don't soften the constraint.
 
 **Voice and audience.** Written as if by an **Engineering Director**

@@ -56,8 +56,8 @@ scenario_1:
       - point: "Executive Status watch items frame open design questions"
         description: "Paragraph 2 of the Executive Status (if present) frames its watch items as open design questions or pending decisions (e.g. 'pending alignment', 'no approved design', 'decision required'), not as Jira hygiene issues, review-SLA complaints, or assignment gaps."
 
-      - point: "Executive Status is under the 100-word cap"
-        description: "The total word count of {{EXEC_STATUS_REPORT_HTML}} (text content only, excluding HTML tags) is at most 100 words, spread across no more than 2 <p> paragraphs."
+      - point: "Executive Status is under the 60-word cap"
+        description: "The total word count of {{EXEC_STATUS_REPORT_HTML}} (text content only, excluding HTML tags) is at most 60 words, spread across no more than 2 <p> paragraphs."
 
       - point: "Executive Status is synthetic and objective"
         description: "The text contains no editorial qualifiers from this list: 'warrants attention', 'concerning', 'encouraging', 'we are pleased', 'it is worth noting', 'key milestone', 'critical', 'crucial', 'very important'. Statements are factual (e.g. 'Team X completed Y', 'Decision Z is pending'), not opinionated."
