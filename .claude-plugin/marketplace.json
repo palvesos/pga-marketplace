@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "pga-marketplace",
   "description": "Paulo Alves' personal Claude Code marketplace \u2014 Engineering Manager tooling for OutSystems R&D",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "owner": {
     "name": "Paulo Alves",
     "email": "paulo.alves@outsystems.com"
@@ -11,7 +11,7 @@
     {
       "name": "initiative-dashboards",
       "description": "Tooling for Engineering Managers and Product Managers to summarise the progress of an initiative or epic into a self-contained HTML dashboard. Walks Jira (epic + children + linked epics), enriches with GitHub PRs, Productboard, Confluence, and Google Sheets roadmap context, and renders an executive Progress Summary plus Recommended Actions.",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "source": "./plugins/initiative-dashboards",
       "category": "productivity",
       "author": {

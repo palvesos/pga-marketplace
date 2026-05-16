@@ -62,6 +62,9 @@ scenario_1:
       - point: "Executive Status is synthetic and objective"
         description: "The text contains no editorial qualifiers from this list: 'warrants attention', 'concerning', 'encouraging', 'we are pleased', 'it is worth noting', 'key milestone', 'critical', 'crucial', 'very important'. Statements are factual (e.g. 'Team X completed Y', 'Decision Z is pending'), not opinionated."
 
+      - point: "Highlights / Lowlights capped at 3 bullets each"
+        description: "Inside {{HIGHLIGHTS_LOWLIGHTS_HTML}}, the <ul> under <h4>Highlights</h4> contains at most 3 <li> items, and the <ul> under <h4>Lowlights</h4> contains at most 3 <li> items."
+
 # Scenario 2: Sequencing risk — M1 in progress before LLD done
 scenario_2:
   name: "sequencing_risk_detection"

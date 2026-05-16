@@ -210,13 +210,15 @@ Strategic, outcome-oriented, calm. The reader is not in the day-to-day.
   `Open question:` or `Open decision:` for scannability.
 
 **Card 3 — Highlights / Lowlights**
-- 2-4 highlights (`<ul>` under an `<h4>Highlights</h4>`) — recent wins,
-  good news, things to celebrate
-- 2-4 lowlights (`<ul>` under an `<h4>Lowlights</h4>`) — risks, blockers,
-  things slipping
+- **Up to 3 highlights** (`<ul>` under an `<h4>Highlights</h4>`) — the
+  most important recent wins. **Hard cap: 3.**
+- **Up to 3 lowlights** (`<ul>` under an `<h4>Lowlights</h4>`) — the
+  most important risks, blockers, or slips. **Hard cap: 3.**
+- If more than 3 candidates exist, pick the highest-impact ones for an
+  executive audience and drop the rest. Don't soften — cut.
 - Both sections wrapped in `<div class="hl-section highlights">` /
   `<div class="hl-section lowlights">` so the CSS picks up the right
-  badges
+  badges.
 
 #### 5.2 Progress Summary (bottom row, left card)
 
