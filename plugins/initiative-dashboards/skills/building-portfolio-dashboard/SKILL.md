@@ -104,6 +104,22 @@ workflow:
     ```
     `rpor_label` is a short tag like `PU-M2.1.8` (extract from the RPOR
     summary prefix).
+  - **`target_start`**, **`target_due`**, **`ga_date`** — feed the
+    portfolio Gantt chart. Resolution order:
+    1. Read from the **parent RPOR** (preferred — that's where dates
+       live for VMs, Initiatives, Solution Enablers):
+       - `customfield_15485` — Target Start
+       - `customfield_15486` — Target Due
+       - `customfield_15491` — GA / EAP Date
+    2. If the RPOR has no dates (e.g. an Initiative still in Definition),
+       fall back to the **epic's own** dates:
+       - `customfield_15330` — Target Start
+       - `duedate` — Due Date
+       - (no GA fallback at the epic level — leave `ga_date` null)
+
+    Date values must be ISO `YYYY-MM-DD` strings. If any is missing,
+    use `null`; the Gantt will skip the bar (or omit the GA marker)
+    accordingly.
 
 Do the drill-downs **sequentially** — the Jira CLI is rate-limited and
 parallel calls can stomp on each other. A 5-initiative rollup typically
