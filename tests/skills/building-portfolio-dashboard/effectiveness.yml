@@ -1,6 +1,6 @@
 test_type: "effectiveness"
 name: "building-portfolio-dashboard-validation"
-description: "Validates that building-portfolio-dashboard produces a complete, executive-quality HTML rollup with one card per initiative, correct KPI aggregation, severity-sorted ordering, and a constrained portfolio executive summary."
+description: "Validates that building-portfolio-dashboard produces a complete, executive-quality HTML rollup: KPI strip, portfolio Executive Status and Highlights/Lowlights cards, filterable Initiatives Index table with click-to-show detail panel, Gantt timeline, and portfolio-level H/L bullets using the code-chip + friendly-name format."
 
 # Scenario 1: Happy path — 3 initiatives, mixed RAG, fixture-driven hero content
 scenario_1:
@@ -16,10 +16,10 @@ scenario_1:
   prompt: |
     Build a portfolio dashboard from the data in portfolio-mixed.json.
     The per-initiative hero content (RAG, executive bullets, highlights,
-    lowlights, SP counts, PR counts) is already provided in the fixture —
-    skip Step 2 of the skill (no acli/gh per-initiative drilldown).
-    Use the values verbatim. Render to portfolio-dashboard.html in the
-    working directory. Do NOT open it.
+    lowlights, SP counts, PR counts, dates, team, parent RPOR) is already
+    provided in the fixture — skip Step 2 of the skill (no acli/gh
+    per-initiative drilldown). Use the values verbatim. Render to
+    portfolio-dashboard.html in the working directory. Do NOT open it.
 
   validation:
     prerequisites:
@@ -29,12 +29,15 @@ scenario_1:
       - point: "All template placeholders filled"
         description: "The generated portfolio-dashboard.html contains zero remaining `{{...}}` placeholder tokens."
 
-      - point: "One card per initiative"
-        description: "The HTML contains exactly 3 elements matching `<article class=\"initiative-card`, one per fixture initiative."
+      - point: "Initiatives Index has one row per initiative"
+        description: "The Initiatives Index `<tbody>` (id `index-tbody`) is rendered (or the INITIATIVES_INDEX JS array embedded in the page contains 3 objects, one per fixture initiative: FAKE-100, FAKE-200, FAKE-300)."
+
+      - point: "Portfolio H/L card present"
+        description: "The HTML contains an `<div class=\"exec-card hl\">` block with an `<h3>` containing 'Highlights / Lowlights' and at least one `<li>` inside both an `<h4>Highlights</h4>` and an `<h4>Lowlights</h4>` section."
 
     skill_scoring:
-      - point: "Cards sorted by RAG severity"
-        description: "In the rendered HTML, the order of <article class=\"initiative-card\"> elements is: rag-red first (FAKE-300), then rag-yellow (FAKE-200), then rag-green (FAKE-100)."
+      - point: "Initiatives index sortable + filterable"
+        description: "The page exposes filter dropdowns for Owner Team (`#filter-index-team`) and Parent RPOR (`#filter-index-rpor`), both populated with the fixture's distinct values."
 
       - point: "KPI counts match the fixture"
         description: "The Green KPI shows 1, Yellow KPI shows 1, Red KPI shows 1, and the Initiatives Total KPI shows 3."
@@ -45,14 +48,30 @@ scenario_1:
       - point: "Open PRs aggregate correctly"
         description: "Open PRs KPI shows 2 (the sum of 2+0+0)."
 
-      - point: "Each card links to a per-initiative dashboard"
-        description: "Each `<article class=\"initiative-card\">` contains at least one anchor pointing to `dashboard-<KEY>.html` (e.g. `dashboard-FAKE-100.html`)."
+      - point: "Detail panel links to per-initiative dashboards"
+        description: "The Selected initiative detail panel (or each initiative entry in the JS index) carries a path `dashboard-<KEY>.html` for each of FAKE-100, FAKE-200, FAKE-300."
+
+      - point: "Gantt timeline renders with date-bearing initiatives"
+        description: "A `gantt-card` section exists, containing `gantt-row` rows for all three initiatives (each fixture initiative has both target_start and target_due)."
 
       - point: "Portfolio Executive Status is under the 80-word cap"
-        description: "The total word count of the {{PORTFOLIO_EXEC_HTML}} content (text-only, excluding tags) is at most 80 words, rendered as 3-5 <li> bullets."
+        description: "The total word count of the Portfolio Executive Status `<ul>` (text-only, excluding tags) is at most 80 words, rendered as 3-5 <li> bullets."
 
       - point: "Portfolio Executive Status omits ticket-level detail"
-        description: "The portfolio executive status contains zero Jira-style ticket keys (regex `[A-Z]{2,}-\\d+`), zero PR references (`#NNN` or `PR #NNN`), and none of the banned PR-idle phrases ('idle in review', 'review SLA', 'PRs idle', 'awaiting review for', 'sitting in review', 'review pileup')."
+        description: "The Portfolio Executive Status text contains zero Jira-style ticket keys (regex `[A-Z]{2,}-\\d+`), zero PR references (`#NNN` or `PR #NNN`), and none of the banned PR-idle phrases ('idle in review', 'review SLA', 'PRs idle', 'awaiting review for', 'sitting in review', 'review pileup')."
 
       - point: "Portfolio Executive Status is synthetic and objective"
-        description: "The text contains none of these editorial qualifiers: 'warrants attention', 'concerning', 'encouraging', 'we are pleased', 'it is worth noting', 'key milestone', 'critical', 'crucial', 'very important'."
+        description: "The Portfolio Executive Status contains none of these editorial qualifiers: 'warrants attention', 'concerning', 'encouraging', 'we are pleased', 'it is worth noting', 'key milestone', 'critical', 'crucial', 'very important'."
+
+      # NEW: portfolio H/L bullet-format rules
+      - point: "Portfolio H/L caps at 3 bullets each"
+        description: "Inside the Portfolio Highlights/Lowlights card, the `<ul>` under `<h4>Highlights</h4>` contains at most 3 `<li>` items, and the `<ul>` under `<h4>Lowlights</h4>` contains at most 3 `<li>` items."
+
+      - point: "Every portfolio H/L bullet carries a code chip"
+        description: "Inside the Portfolio Highlights/Lowlights card (`<div class=\"exec-card hl\">`), every `<li>` contains at least one `<a class=\"li-key\" …>` chip element, and that chip's text is a Jira key matching the regex `[A-Z]{2,}-\\d+` and pointing to a `outsystemsrd.atlassian.net/browse/` URL."
+
+      - point: "Portfolio H/L bullets use the friendly name in the body, not the Jira key"
+        description: "Inside each `<li>` of the Portfolio Highlights/Lowlights card, the text that appears AFTER the `.li-key` chip contains at least one `<strong>` element with the initiative's friendly name (e.g. 'Multi-tenant Connectivity', 'API Auth Refactor', 'Self-Hosted Data Interop'). The text body does NOT contain Jira ticket keys (regex `[A-Z]{2,}-\\d+`) — only the chip carries the key."
+
+      - point: "Every portfolio Lowlight starts with an actionable category label"
+        description: "Every `<li>` under the Portfolio `<h4>Lowlights</h4>` block contains, immediately after the `.li-key` chip, one of these labels (case-insensitive, as a `<span class=\"label-*\">` or `<strong>`): 'Blocker', 'Pending decision', 'Pending design', 'Stalled'. Passive observations such as 'unowned', 'not started', 'in design' without one of these category prefixes are rejected."

@@ -2,14 +2,21 @@
   "portfolio": {
     "title": "Q2 2026 Test Portfolio",
     "input_keys": ["FAKE-100", "FAKE-200", "FAKE-300"],
-    "notes": "3 initiatives mixing Green, Yellow, Red. Skill should render one card per initiative, sort Red first, and surface aggregate KPIs."
+    "notes": "3 initiatives mixing Green, Yellow, Red. Skill should render the index table, the click-to-show detail panel, the Gantt timeline, and a portfolio H/L card with code-chip bullets."
   },
   "initiatives": [
     {
       "key": "FAKE-100",
       "title": "Multi-tenant Connectivity Hardening",
+      "title_short": "Multi-tenant Connectivity",
+      "team": "Team Alpha",
+      "rpor_key": "RPOR-9001",
+      "rpor_label": "PU-A.1",
+      "target_start": "2026-03-02",
+      "target_due":   "2026-06-05",
+      "ga_date":      "2026-06-30",
       "rag_status": "green",
-      "rag_label": "On Track",
+      "rag_label":  "Green",
       "rag_headline": "Both LLDs approved; first PR in review.",
       "exec_bullets": [
         "Team Alpha completed the design for tenant-specific service accounts and cross-tenant DoS protection, and started implementation.",
@@ -32,8 +39,15 @@
     {
       "key": "FAKE-200",
       "title": "API Authentication Refactor",
+      "title_short": "API Auth Refactor",
+      "team": "Team Alpha",
+      "rpor_key": "RPOR-9002",
+      "rpor_label": "PU-A.2",
+      "target_start": "2026-04-01",
+      "target_due":   "2026-07-15",
+      "ga_date":      null,
       "rag_status": "yellow",
-      "rag_label": "Watchful",
+      "rag_label":  "Yellow",
       "rag_headline": "M1 in progress before LLD approved — sequencing risk.",
       "exec_bullets": [
         "Team Alpha started implementation of M1 while the LLD is still in draft.",
@@ -55,8 +69,15 @@
     {
       "key": "FAKE-300",
       "title": "Self-Hosted Read-Write Data Interop",
+      "title_short": "Self-Hosted Data Interop",
+      "team": "Team Bravo",
+      "rpor_key": "RPOR-9003",
+      "rpor_label": "PU-B.1",
+      "target_start": "2026-02-15",
+      "target_due":   "2026-08-30",
+      "ga_date":      "2026-09-15",
       "rag_status": "red",
-      "rag_label": "Pre-implementation",
+      "rag_label":  "Red",
       "rag_headline": "Implementation epic still In Design; no code shipped.",
       "exec_bullets": [
         "Team Alpha completed the production-readiness GAP assessment.",
