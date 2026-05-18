@@ -150,62 +150,52 @@ Same banned vocabulary applies (no `warrants attention`,
    - `{{PORTFOLIO_SUBTITLE}}` — e.g. "Status of N initiatives ·
      YYYY-MM-DD" plus the input echo (VM key or comma-separated keys)
    - `{{KPI_*}}` — the seven KPI values from Step 3
-   - `{{INITIATIVE_CARDS_HTML}}` — concatenated HTML of all initiative
-     cards (see card structure below)
    - `{{INITIATIVES_INDEX_JSON}}` — JSON array driving the filterable
-     **Initiatives Index** table. One object per initiative:
+     **Initiatives Index** table **and** the click-to-show detail panel.
+     One object per initiative:
      ```json
      {
        "key": "RDUCH-169",
        "title_short": "PU-M4.13.1 LT Connectivity",
        "rag_status": "green",
        "rag_label": "Green",
+       "rag_headline": "Both LLDs approved and first RQ01 milestone shipped.",
        "team": "Unification Charlie",
        "rpor_key": "RPOR-28605",
-       "rpor_label": "PU-M4.13"
+       "rpor_label": "PU-M4.13",
+       "exec_html": "<ul>…</ul>",
+       "hl_html": "<div class='hl-section highlights'>…</div><div class='hl-section lowlights'>…</div>"
      }
      ```
-     The table renders Initiative title (linked to the per-initiative
-     dashboard), RAG pill, owner team, and parent RPOR. Filters at the
-     top let the user narrow by **Owner Team** and **Parent RPOR**.
+     The table renders Initiative key, title (linked to the
+     per-initiative dashboard), RAG pill, owner team, and parent RPOR.
+     Filters at the top narrow by **Owner Team** and **Parent RPOR**.
+     **Clicking any row** highlights it and renders that initiative's
+     RAG light + Executive Status + Highlights/Lowlights into the
+     "Selected initiative" detail panel directly below the table.
+     The detail panel defaults to the highest-severity row visible.
    - `{{PORTFOLIO_EXEC_HTML}}` — the `<ul>...</ul>` from Step 4
    - `{{SNAPSHOT_DATE}}` — today's date
    - `{{SOURCES_LINE}}` — which sources were queried per initiative
 3. Write to `<output-dir>/portfolio-dashboard.html`
 4. Open it: `open <path>`
 
-#### Initiative card structure
+#### Detail-panel data shape
 
-Each initiative becomes one `<article class="initiative-card">` with:
+The detail panel below the index table is **fully data-driven** from
+`{{INITIATIVES_INDEX_JSON}}`. For each initiative, pass:
 
-```html
-<article class="initiative-card rag-{{RAG_STATUS}}">
-  <header class="card-header">
-    <span class="rag-dot rag-dot-{{RAG_STATUS}}"></span>
-    <h2><a href="dashboard-{{KEY}}.html">{{TITLE}}</a></h2>
-    <div class="card-meta">
-      <a href="https://outsystemsrd.atlassian.net/browse/{{KEY}}">{{KEY}}</a>
-      · <a href="dashboard-{{KEY}}.html">view full →</a>
-    </div>
-    <div class="rag-headline">{{RAG_HEADLINE}}</div>
-  </header>
-  <section class="card-exec">
-    <h4>Executive Status</h4>
-    <ul>{{EXEC_BULLETS}}</ul>
-  </section>
-  <section class="card-hl">
-    <div class="hl-section highlights">
-      <h4>Highlights</h4><ul>{{HIGHLIGHTS}}</ul>
-    </div>
-    <div class="hl-section lowlights">
-      <h4>Lowlights</h4><ul>{{LOWLIGHTS}}</ul>
-    </div>
-  </section>
-</article>
-```
+- `exec_html` — the same `<ul>` of 3-5 `<li>` bullets used in the
+  per-initiative dashboard's hero "Executive Status" card
+- `hl_html` — the two `<div class="hl-section …">` blocks
+  (Highlights + Lowlights) used in the per-initiative dashboard's
+  hero "Highlights / Lowlights" card
 
-The card always links to the per-initiative `dashboard-<KEY>.html`
-generated in Step 2 — that's the drill-down path.
+The skill is responsible for capturing these from the per-initiative
+render in Step 2 and bundling them per initiative.
+
+The detail panel always links to `dashboard-<KEY>.html` for the
+currently-selected initiative — that's the drill-down path.
 
 ## Best Practices
 

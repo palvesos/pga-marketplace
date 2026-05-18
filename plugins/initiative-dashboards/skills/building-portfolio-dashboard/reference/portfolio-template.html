@@ -66,50 +66,57 @@
   .rag-pill.rag-yellow{background:#fff3cd;color:#7a5b00}
   .rag-pill.rag-red{background:#f8d7da;color:#a13030}
 
-  .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:var(--gap);margin-bottom:var(--gap)}
-  .initiative-card{background:var(--bg-card);border-radius:var(--radius);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);position:relative;overflow:hidden}
-  .initiative-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
-  .initiative-card.rag-green::before{background:var(--rag-green)}
-  .initiative-card.rag-yellow::before{background:var(--rag-yellow)}
-  .initiative-card.rag-red::before{background:var(--rag-red)}
+  .index-table tbody tr{cursor:pointer}
+  .index-table tbody tr.selected{background:#eaf2fb;outline:2px solid #b9d3f1;outline-offset:-2px}
+  .index-table tbody tr.selected td:first-child{font-weight:600}
 
-  .card-header{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-  .card-header h2{font-size:15px;font-weight:600;margin:0 0 4px 0;display:flex;align-items:center;gap:10px}
-  .card-header h2 a{color:var(--text-primary)}
-  .card-header h2 a:hover{color:#3a6fb5;text-decoration:none}
-  .card-meta{font-size:11px;color:var(--text-secondary);margin-bottom:6px}
-  .rag-dot{display:inline-block;width:14px;height:14px;border-radius:50%;flex-shrink:0}
+  .detail-section{margin-bottom:var(--gap)}
+  .detail-header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+  .detail-header h3{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px;margin:0}
+  .detail-header h3::before{content:"";width:3px;height:14px;background:#4C72B0;border-radius:2px}
+  .detail-header .detail-title{font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0}
+  .detail-header a{font-size:12px}
+
+  .detail-row{display:grid;grid-template-columns:minmax(220px,1fr) 2fr 1.5fr;gap:var(--gap)}
+  .detail-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);display:flex;flex-direction:column;gap:10px;min-height:160px}
+  .detail-card .detail-label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+
+  .detail-rag{display:flex;align-items:center;gap:16px;margin-top:4px}
+  .rag-dot{display:inline-block;border-radius:50%}
+  .rag-dot.big{width:54px;height:54px;flex-shrink:0}
+  .rag-dot{width:14px;height:14px}
   .rag-dot-green{background:radial-gradient(circle at 30% 30%, #6dd687, var(--rag-green) 75%);box-shadow:0 0 6px rgba(40,167,69,.4)}
   .rag-dot-yellow{background:radial-gradient(circle at 30% 30%, #ffe58f, var(--rag-yellow) 75%);box-shadow:0 0 6px rgba(245,184,0,.4)}
   .rag-dot-red{background:radial-gradient(circle at 30% 30%, #f0807e, var(--rag-red) 75%);box-shadow:0 0 6px rgba(196,78,82,.4)}
-  .rag-headline{font-size:12.5px;color:var(--text-secondary);font-style:italic}
+  .rag-dot.big.rag-dot-green{box-shadow:0 0 22px rgba(40,167,69,.35),inset -3px -3px 6px rgba(0,0,0,.12)}
+  .rag-dot.big.rag-dot-yellow{box-shadow:0 0 22px rgba(245,184,0,.35),inset -3px -3px 6px rgba(0,0,0,.12)}
+  .rag-dot.big.rag-dot-red{box-shadow:0 0 22px rgba(196,78,82,.35),inset -3px -3px 6px rgba(0,0,0,.12)}
+  .rag-label-big{font-size:22px;font-weight:700;letter-spacing:.3px;line-height:1.1}
+  .rag-sublabel{font-size:13px;color:var(--text-secondary);margin-top:2px}
 
-  .card-exec{margin-bottom:12px}
-  .card-exec h4,.card-hl h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin-bottom:4px}
-  .card-exec ul{padding-left:18px;font-size:12.5px;line-height:1.5;margin:0}
-  .card-exec li{margin-bottom:3px}
-
-  .card-hl{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .hl-section h4{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .detail-card ul{padding-left:18px;font-size:13px;line-height:1.55;margin:0}
+  .detail-card li{margin-bottom:4px}
+  .hl-section{margin-top:2px}
+  .hl-section + .hl-section{margin-top:10px}
+  .hl-section h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
   .hl-section.highlights h4{color:#1f6b3a}
   .hl-section.lowlights h4{color:#a13030}
   .hl-section.highlights h4::before{content:"✓";font-weight:900}
   .hl-section.lowlights h4::before{content:"!";font-weight:900;background:#a13030;color:#fff;width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
-  .hl-section ul{padding-left:18px;font-size:12px;line-height:1.5;margin:0}
+  .hl-section ul{padding-left:18px;font-size:12.5px;line-height:1.5;margin:0}
   .hl-section li{margin-bottom:3px}
 
   .dashboard-footer{margin-top:var(--gap);font-size:11px;color:var(--text-secondary);text-align:center;padding:10px}
 
   @media (max-width:960px){
-    .cards-grid{grid-template-columns:1fr}
-    .card-hl{grid-template-columns:1fr}
+    .detail-row{grid-template-columns:1fr}
     .kpi-row{grid-template-columns:repeat(2,1fr)}
   }
   @media print{
     body{background:white}
     .dashboard-container{max-width:none}
-    .kpi-card,.exec-card,.initiative-card{box-shadow:none;border:1px solid #ddd}
-    .initiative-card{break-inside:avoid}
+    .kpi-card,.exec-card,.detail-card,.index-card{box-shadow:none;border:1px solid #ddd}
+    .detail-card{break-inside:avoid}
   }
 </style>
 </head>
@@ -167,8 +174,31 @@
     </table>
   </section>
 
-  <section class="cards-grid">
-    {{INITIATIVE_CARDS_HTML}}
+  <section class="detail-section" id="detail-section">
+    <div class="detail-header">
+      <h3><span>Selected initiative:</span> <span class="detail-title" id="detail-title">—</span></h3>
+      <a id="detail-view-full" target="_blank">view full dashboard →</a>
+    </div>
+    <div class="detail-row">
+      <div class="detail-card">
+        <div class="detail-label">Status</div>
+        <div class="detail-rag">
+          <span class="rag-dot big" id="detail-dot"></span>
+          <div>
+            <div class="rag-label-big" id="detail-label">—</div>
+            <div class="rag-sublabel" id="detail-headline">Click a row above to focus an initiative</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-label">Executive Status</div>
+        <div id="detail-exec"></div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-label">Highlights / Lowlights</div>
+        <div id="detail-hl"></div>
+      </div>
+    </div>
   </section>
 
   <div class="dashboard-footer">Portfolio dashboard · Snapshot {{SNAPSHOT_DATE}} · Sources: {{SOURCES_LINE}} · Audience: Engineering Directors &amp; Product Managers</div>
@@ -185,12 +215,16 @@ class IndexTable {
     this.filtered = data;
     this.sortField = "status";
     this.sortDir = "asc";
+    this.selectedKey = null;
     this.init();
   }
   init(){
     this.populateFilters();
     this.bindEvents();
     this.apply();
+    // default-select worst-severity row visible
+    const first = this.lastSorted && this.lastSorted[0];
+    if(first) this.select(first.key);
   }
   populateFilters(){
     const teams = [...new Set(this.raw.map(d=>d.team).filter(Boolean))].sort();
@@ -228,6 +262,11 @@ class IndexTable {
       return true;
     });
     this.render();
+    // if currently-selected got filtered out, jump to first visible
+    if(this.selectedKey && !this.filtered.some(d=>d.key===this.selectedKey)){
+      const first = this.lastSorted && this.lastSorted[0];
+      if(first) this.select(first.key);
+    }
   }
   render(){
     const sorted = [...this.filtered].sort((a,b)=>{
@@ -240,17 +279,41 @@ class IndexTable {
       }
       return this.sortDir==="asc"?cmp:-cmp;
     });
+    this.lastSorted = sorted;
     const tbody = document.getElementById("index-tbody");
     tbody.innerHTML = sorted.map(d=>`
-      <tr>
-        <td><a href="${JIRA_BASE}${d.key}" target="_blank">${d.key}</a></td>
-        <td><a href="dashboard-${d.key}.html">${d.title_short || d.title}</a></td>
+      <tr data-key="${d.key}"${d.key===this.selectedKey?' class="selected"':''}>
+        <td><a href="${JIRA_BASE}${d.key}" target="_blank" onclick="event.stopPropagation()">${d.key}</a></td>
+        <td>${d.title_short || d.title}</td>
         <td><span class="rag-pill rag-${d.rag_status}"><span class="rag-dot rag-dot-${d.rag_status}"></span>${d.rag_label}</span></td>
         <td>${d.team || '—'}</td>
-        <td>${d.rpor_key ? `<a href="${JIRA_BASE}${d.rpor_key}" target="_blank">${d.rpor_key}</a>${d.rpor_label ? ' — '+d.rpor_label : ''}` : '—'}</td>
+        <td>${d.rpor_key ? `<a href="${JIRA_BASE}${d.rpor_key}" target="_blank" onclick="event.stopPropagation()">${d.rpor_key}</a>${d.rpor_label ? ' — '+d.rpor_label : ''}` : '—'}</td>
       </tr>
     `).join("");
+    tbody.querySelectorAll("tr[data-key]").forEach(tr=>{
+      tr.addEventListener("click", ()=>this.select(tr.getAttribute("data-key")));
+    });
     document.getElementById("filter-index-count").textContent = `${sorted.length} of ${this.raw.length} initiative${this.raw.length===1?"":"s"}`;
+  }
+  select(key){
+    this.selectedKey = key;
+    // visual highlight
+    document.querySelectorAll("#index-tbody tr").forEach(tr=>{
+      tr.classList.toggle("selected", tr.getAttribute("data-key")===key);
+    });
+    const d = this.raw.find(x=>x.key===key);
+    if(!d) return;
+    document.getElementById("detail-title").innerHTML = `<a href="${JIRA_BASE}${d.key}" target="_blank">${d.key}</a> — ${d.title_short || d.title}`;
+    const dot = document.getElementById("detail-dot");
+    dot.className = `rag-dot big rag-dot-${d.rag_status}`;
+    document.getElementById("detail-label").textContent = d.rag_label;
+    document.getElementById("detail-headline").textContent = d.rag_headline || "";
+    document.getElementById("detail-exec").innerHTML = d.exec_html || '<span style="color:#999">No executive status captured.</span>';
+    document.getElementById("detail-hl").innerHTML = d.hl_html || '<span style="color:#999">No highlights/lowlights captured.</span>';
+    const link = document.getElementById("detail-view-full");
+    link.href = `dashboard-${d.key}.html`;
+    // smooth scroll into view if user clicked from far up
+    document.getElementById("detail-section").scrollIntoView({behavior:"smooth", block:"nearest"});
   }
 }
 
