@@ -164,9 +164,7 @@ Same banned vocabulary applies (no `warrants attention`,
 Same structure as per-initiative card 3:
 
 - **Up to 3 highlights** (`<ul>` under `<h4>Highlights</h4>`) — the
-  most important wins **across the portfolio** (not within one
-  initiative). E.g. "First production code shipped on initiative X",
-  "Design phases closed on 3 of 4 initiatives".
+  most important wins **across the portfolio**.
 - **Up to 3 lowlights** (`<ul>` under `<h4>Lowlights</h4>`) — must
   be **actionable items** that leadership can help resolve:
   - **Blockers** (named team, named decision)
@@ -177,6 +175,29 @@ Same structure as per-initiative card 3:
   **DO NOT** include passive observations ("Threat Model is unowned"
   is too soft → reframe to "Pending: assign Threat Model owner").
   Each lowlight should imply *who acts and what they decide*.
+
+**Bullet format — code chip + friendly name (portfolio H/L only).**
+Each bullet in the portfolio Highlights/Lowlights must:
+
+1. Start with a small **initiative code chip** linking to Jira. Use
+   `<a class="li-key" href="https://outsystemsrd.atlassian.net/browse/<KEY>" target="_blank">KEY</a>`
+2. Reference the initiative by its **friendly name in bold**
+   (`<strong>…</strong>`) — never by its Jira key or the PU-Mx code.
+   Use the initiative's `title_short` (or a shorter readable form).
+
+Example:
+```html
+<li><a class="li-key" href="…/browse/RDUCH-169" target="_blank">RDUCH-169</a>
+    First production code shipped on <strong>LT Connectivity</strong>
+    (RQ01 M1 merged)</li>
+```
+
+This pattern gives scannability via the leading chip while keeping the
+bullet readable as natural prose. The same pattern applies to both
+Highlights and Lowlights.
+
+If a bullet truly spans multiple initiatives (rare), reframe it to be
+specific to one — or chain 2-3 chips before the text.
 
 Wrap each section in `<div class="hl-section highlights">` /
 `<div class="hl-section lowlights">` so the badge CSS picks up.
