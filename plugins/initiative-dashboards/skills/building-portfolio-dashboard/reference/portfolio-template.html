@@ -38,9 +38,11 @@
   .kpi-yellow .kpi-value{color:#a87d00}
   .kpi-red .kpi-value{color:var(--rag-red)}
 
-  .exec-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);margin-bottom:var(--gap)}
+  .exec-row{display:grid;grid-template-columns:2fr 1.5fr;gap:var(--gap);margin-bottom:var(--gap)}
+  .exec-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border)}
   .exec-card h3{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
   .exec-card h3::before{content:"";width:3px;height:14px;background:#4C72B0;border-radius:2px}
+  .exec-card.hl h3::before{background:#DD8452}
   .exec-card ul{padding-left:18px;font-size:13.5px;line-height:1.6;margin:0}
   .exec-card li{margin-bottom:4px}
 
@@ -139,6 +141,7 @@
   .dashboard-footer{margin-top:var(--gap);font-size:11px;color:var(--text-secondary);text-align:center;padding:10px}
 
   @media (max-width:960px){
+    .exec-row{grid-template-columns:1fr}
     .detail-row{grid-template-columns:1fr}
     .kpi-row{grid-template-columns:repeat(2,1fr)}
   }
@@ -171,9 +174,15 @@
     <div class="kpi-card"><div class="kpi-label">Open PRs</div><div class="kpi-value" style="color:#DD8452">{{KPI_OPEN_PRS}}</div><div class="kpi-sub">across portfolio</div></div>
   </section>
 
-  <section class="exec-card">
-    <h3>Portfolio Executive Status</h3>
-    {{PORTFOLIO_EXEC_HTML}}
+  <section class="exec-row">
+    <div class="exec-card">
+      <h3>Portfolio Executive Status</h3>
+      {{PORTFOLIO_EXEC_HTML}}
+    </div>
+    <div class="exec-card hl">
+      <h3>Portfolio Highlights / Lowlights</h3>
+      {{PORTFOLIO_HL_HTML}}
+    </div>
   </section>
 
   <section class="index-card" id="index-section">

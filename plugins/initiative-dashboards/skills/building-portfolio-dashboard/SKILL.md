@@ -139,14 +139,17 @@ Aggregate across all initiatives:
 | Total Unsized items | sum of `sp_unsized_count` |
 | Total open PRs | sum of `open_pr_count` |
 
-### Step 4 — Draft the portfolio executive summary
+### Step 4 — Draft the portfolio executive narrative
 
-**Audience:** C-level + PM Leadership, same voice as the per-initiative
-exec status (Engineering Director, synthetic, objective).
+The portfolio header row has **two cards side-by-side**: the Executive
+Status (left) and Highlights / Lowlights (right). Author both.
 
-**Format:** 3-5 short `<li>` bullets, **hard cap 80 words total**
-across all bullets. The cap is wider than per-initiative (60) because
-a portfolio summary needs to cover more ground.
+**Audience for both:** C-level + PM Leadership, same voice as the
+per-initiative exec status (Engineering Director, synthetic, objective).
+
+#### 4.1 Portfolio Executive Status
+
+**Format:** 3-5 short `<li>` bullets, **hard cap 80 words total**.
 
 **Content:**
 - Overall portfolio posture in one bullet
@@ -155,6 +158,30 @@ a portfolio summary needs to cover more ground.
 
 Same banned vocabulary applies (no `warrants attention`,
 `encouraging`, etc.). No PR review-SLA noise. No Jira ticket keys.
+
+#### 4.2 Portfolio Highlights / Lowlights
+
+Same structure as per-initiative card 3:
+
+- **Up to 3 highlights** (`<ul>` under `<h4>Highlights</h4>`) — the
+  most important wins **across the portfolio** (not within one
+  initiative). E.g. "First production code shipped on initiative X",
+  "Design phases closed on 3 of 4 initiatives".
+- **Up to 3 lowlights** (`<ul>` under `<h4>Lowlights</h4>`) — must
+  be **actionable items** that leadership can help resolve:
+  - **Blockers** (named team, named decision)
+  - **Pending decisions** (named owners or alignment needed)
+  - **Pending designs** (missing LLD / unscoped requirement)
+  - **Cross-team dependencies** stalled
+
+  **DO NOT** include passive observations ("Threat Model is unowned"
+  is too soft → reframe to "Pending: assign Threat Model owner").
+  Each lowlight should imply *who acts and what they decide*.
+
+Wrap each section in `<div class="hl-section highlights">` /
+`<div class="hl-section lowlights">` so the badge CSS picks up.
+
+PR review-SLA noise rule still applies — no `idle in review` etc.
 
 ### Step 5 — Render the portfolio dashboard
 
@@ -190,7 +217,9 @@ Same banned vocabulary applies (no `warrants attention`,
      RAG light + Executive Status + Highlights/Lowlights into the
      "Selected initiative" detail panel directly below the table.
      The detail panel defaults to the highest-severity row visible.
-   - `{{PORTFOLIO_EXEC_HTML}}` — the `<ul>...</ul>` from Step 4
+   - `{{PORTFOLIO_EXEC_HTML}}` — the `<ul>...</ul>` from Step 4.1
+   - `{{PORTFOLIO_HL_HTML}}` — the two `<div class="hl-section …">`
+     blocks (Highlights + Lowlights) from Step 4.2
    - `{{SNAPSHOT_DATE}}` — today's date
    - `{{SOURCES_LINE}}` — which sources were queried per initiative
 3. Write to `<output-dir>/portfolio-dashboard.html`
