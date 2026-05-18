@@ -12,11 +12,12 @@ Given a single Jira epic or initiative key, the `building-initiative-dashboard` 
 4. Synthesises an **executive Progress Summary** (RAG per track) and **Recommended Actions**
 5. Renders an interactive single-file HTML dashboard (KPIs, status doughnut, SP-by-track stacked bar, filterable/sortable item table) and opens it in the browser
 
-## Skill
+## Skills
 
 | Skill | Description |
 |---|---|
-| [`building-initiative-dashboard`](skills/building-initiative-dashboard) | Build a self-contained progress dashboard for an initiative or epic |
+| [`building-initiative-dashboard`](skills/building-initiative-dashboard) | Build a self-contained progress dashboard for one initiative or epic |
+| [`building-portfolio-dashboard`](skills/building-portfolio-dashboard) | Roll up status across multiple initiatives or a Value Milestone — drills down via `building-initiative-dashboard` per item and renders an executive rollup with portfolio KPIs, traffic-light cards, and links to each generated initiative dashboard |
 
 ## Prerequisites
 

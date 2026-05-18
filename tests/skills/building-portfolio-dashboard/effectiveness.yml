@@ -1,0 +1,58 @@
+test_type: "effectiveness"
+name: "building-portfolio-dashboard-validation"
+description: "Validates that building-portfolio-dashboard produces a complete, executive-quality HTML rollup with one card per initiative, correct KPI aggregation, severity-sorted ordering, and a constrained portfolio executive summary."
+
+# Scenario 1: Happy path — 3 initiatives, mixed RAG, fixture-driven hero content
+scenario_1:
+  name: "portfolio_synthesis_mixed_rag"
+
+  read_references:
+    - reference/portfolio-template.html
+
+  codebase:
+    fixtures:
+      - dashboards/portfolio-mixed.json
+
+  prompt: |
+    Build a portfolio dashboard from the data in portfolio-mixed.json.
+    The per-initiative hero content (RAG, executive bullets, highlights,
+    lowlights, SP counts, PR counts) is already provided in the fixture —
+    skip Step 2 of the skill (no acli/gh per-initiative drilldown).
+    Use the values verbatim. Render to portfolio-dashboard.html in the
+    working directory. Do NOT open it.
+
+  validation:
+    prerequisites:
+      - point: "Portfolio dashboard file produced"
+        description: "A file named portfolio-dashboard.html is created in the working directory."
+
+      - point: "All template placeholders filled"
+        description: "The generated portfolio-dashboard.html contains zero remaining `{{...}}` placeholder tokens."
+
+      - point: "One card per initiative"
+        description: "The HTML contains exactly 3 elements matching `<article class=\"initiative-card`, one per fixture initiative."
+
+    skill_scoring:
+      - point: "Cards sorted by RAG severity"
+        description: "In the rendered HTML, the order of <article class=\"initiative-card\"> elements is: rag-red first (FAKE-300), then rag-yellow (FAKE-200), then rag-green (FAKE-100)."
+
+      - point: "KPI counts match the fixture"
+        description: "The Green KPI shows 1, Yellow KPI shows 1, Red KPI shows 1, and the Initiatives Total KPI shows 3."
+
+      - point: "SP totals aggregate correctly"
+        description: "SP Done KPI shows 9 (6+0+3), SP In Flight shows 20 (12+3+5), SP Remaining shows 32 (22+10+0)."
+
+      - point: "Open PRs aggregate correctly"
+        description: "Open PRs KPI shows 2 (the sum of 2+0+0)."
+
+      - point: "Each card links to a per-initiative dashboard"
+        description: "Each `<article class=\"initiative-card\">` contains at least one anchor pointing to `dashboard-<KEY>.html` (e.g. `dashboard-FAKE-100.html`)."
+
+      - point: "Portfolio Executive Status is under the 80-word cap"
+        description: "The total word count of the {{PORTFOLIO_EXEC_HTML}} content (text-only, excluding tags) is at most 80 words, rendered as 3-5 <li> bullets."
+
+      - point: "Portfolio Executive Status omits ticket-level detail"
+        description: "The portfolio executive status contains zero Jira-style ticket keys (regex `[A-Z]{2,}-\\d+`), zero PR references (`#NNN` or `PR #NNN`), and none of the banned PR-idle phrases ('idle in review', 'review SLA', 'PRs idle', 'awaiting review for', 'sitting in review', 'review pileup')."
+
+      - point: "Portfolio Executive Status is synthetic and objective"
+        description: "The text contains none of these editorial qualifiers: 'warrants attention', 'concerning', 'encouraging', 'we are pleased', 'it is worth noting', 'key milestone', 'critical', 'crucial', 'very important'."

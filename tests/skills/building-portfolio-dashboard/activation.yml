@@ -1,0 +1,61 @@
+test_type: "activation"
+name: "building-portfolio-dashboard"
+skill_name: "building-portfolio-dashboard"
+
+prompts:
+  # Explicit positives — trigger phrases from the skill description
+  - prompt: "build a portfolio dashboard for RDUCH-151, RDUCH-169, RPOR-28633"
+    activated_skills:
+      - building-portfolio-dashboard
+    not_activated_skills: []
+
+  - prompt: "rollup status for these initiatives: ABC-100, ABC-200"
+    activated_skills:
+      - building-portfolio-dashboard
+    not_activated_skills: []
+
+  - prompt: "executive rollup for value milestone RPOR-28633"
+    activated_skills:
+      - building-portfolio-dashboard
+    not_activated_skills: []
+
+  - prompt: "VM status dashboard for PU-M2.1.10"
+    activated_skills:
+      - building-portfolio-dashboard
+    not_activated_skills: []
+
+  - prompt: "summary across multiple initiatives: RDUCH-151 and RDUCH-169"
+    activated_skills:
+      - building-portfolio-dashboard
+    not_activated_skills: []
+
+  - prompt: "build me a status report covering 3 epics — the LT Connectivity one and the two Self-Hosted ones"
+    activated_skills:
+      - building-portfolio-dashboard
+    not_activated_skills: []
+
+  # Negatives — single-initiative or unrelated prompts must NOT trigger this skill
+  - prompt: "build a dashboard for RDUCH-169"
+    activated_skills:
+      - building-initiative-dashboard
+    not_activated_skills:
+      - building-portfolio-dashboard
+
+  - prompt: "what's the status of RDUCH-183?"
+    activated_skills: []
+    not_activated_skills:
+      - building-portfolio-dashboard
+
+  - prompt: "build a dashboard showing Snowflake sales data"
+    activated_skills: []
+    not_activated_skills:
+      - building-portfolio-dashboard
+
+  - prompt: "create a Jira issue for a missing feature"
+    activated_skills: []
+    not_activated_skills:
+      - building-portfolio-dashboard
+
+thresholds:
+  min_activation_rate: 0.70
+  block_deprecation: true

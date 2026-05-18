@@ -1,0 +1,82 @@
+{
+  "portfolio": {
+    "title": "Q2 2026 Test Portfolio",
+    "input_keys": ["FAKE-100", "FAKE-200", "FAKE-300"],
+    "notes": "3 initiatives mixing Green, Yellow, Red. Skill should render one card per initiative, sort Red first, and surface aggregate KPIs."
+  },
+  "initiatives": [
+    {
+      "key": "FAKE-100",
+      "title": "Multi-tenant Connectivity Hardening",
+      "rag_status": "green",
+      "rag_label": "On Track",
+      "rag_headline": "Both LLDs approved; first PR in review.",
+      "exec_bullets": [
+        "Team Alpha completed the design for tenant-specific service accounts and cross-tenant DoS protection, and started implementation.",
+        "Team Bravo is delivering the dependent Portal and LifeTime changes in parallel."
+      ],
+      "highlights": [
+        "Both technical LLDs approved",
+        "First code in review",
+        "Cross-team backlogs progressing"
+      ],
+      "lowlights": [
+        "Third requirement still unscoped"
+      ],
+      "sp_done": 6,
+      "sp_in_flight": 12,
+      "sp_remaining": 22,
+      "sp_unsized_count": 3,
+      "open_pr_count": 2
+    },
+    {
+      "key": "FAKE-200",
+      "title": "API Authentication Refactor",
+      "rag_status": "yellow",
+      "rag_label": "Watchful",
+      "rag_headline": "M1 in progress before LLD approved — sequencing risk.",
+      "exec_bullets": [
+        "Team Alpha started implementation of M1 while the LLD is still in draft.",
+        "Open decision: validation scope across two services pending alignment."
+      ],
+      "highlights": [
+        "M1 implementation underway"
+      ],
+      "lowlights": [
+        "LLD still in draft",
+        "Sequencing risk: M1 started before design approval"
+      ],
+      "sp_done": 0,
+      "sp_in_flight": 3,
+      "sp_remaining": 10,
+      "sp_unsized_count": 1,
+      "open_pr_count": 0
+    },
+    {
+      "key": "FAKE-300",
+      "title": "Self-Hosted Read-Write Data Interop",
+      "rag_status": "red",
+      "rag_label": "Pre-implementation",
+      "rag_headline": "Implementation epic still In Design; no code shipped.",
+      "exec_bullets": [
+        "Team Alpha completed the production-readiness GAP assessment.",
+        "Implementation epic is still in design; only a spike is running.",
+        "Open question: target architecture for cross-stage data access."
+      ],
+      "highlights": [
+        "GAP assessment complete",
+        "Spike running on the implementation epic"
+      ],
+      "lowlights": [
+        "Implementation epic still In Design",
+        "VM Threat Model not started",
+        "Forecast not yet possible"
+      ],
+      "sp_done": 3,
+      "sp_in_flight": 5,
+      "sp_remaining": 0,
+      "sp_unsized_count": 3,
+      "open_pr_count": 0
+    }
+  ]
+}
