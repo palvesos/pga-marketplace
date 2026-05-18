@@ -1,7 +1,7 @@
 {
   "name": "initiative-dashboards",
   "description": "Tooling for Engineering Managers and Product Managers to summarise the progress of one initiative (building-initiative-dashboard) or a portfolio of initiatives/Value Milestone (building-portfolio-dashboard) into a self-contained HTML dashboard.",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "author": {
     "name": "Paulo Alves",
     "email": "paulo.alves@outsystems.com"

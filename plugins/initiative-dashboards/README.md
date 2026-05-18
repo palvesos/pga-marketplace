@@ -17,7 +17,29 @@ Given a single Jira epic or initiative key, the `building-initiative-dashboard` 
 | Skill | Description |
 |---|---|
 | [`building-initiative-dashboard`](skills/building-initiative-dashboard) | Build a self-contained progress dashboard for one initiative or epic |
-| [`building-portfolio-dashboard`](skills/building-portfolio-dashboard) | Roll up status across multiple initiatives or a Value Milestone — drills down via `building-initiative-dashboard` per item and renders an executive rollup with portfolio KPIs, traffic-light cards, and links to each generated initiative dashboard |
+| [`building-portfolio-dashboard`](skills/building-portfolio-dashboard) | Roll up status across multiple initiatives or a Value Milestone — drills down via `building-initiative-dashboard` per item and renders an executive rollup with portfolio KPIs, Highlights/Lowlights, filterable Initiatives Index, Gantt timeline, and a click-to-show detail panel |
+
+## Trigger phrases
+
+### `building-initiative-dashboard` (single initiative)
+
+- *"build a dashboard for RDUCH-169"*
+- *"create a progress dashboard for epic ABC-123"*
+- *"make a status dashboard for RDUCH-151"*
+- *"executive report for initiative PU-M4.13.1"*
+- *"visualise progress on epic RDUCH-200"*
+- *"generate an executive update for this epic — RDUCH-199"*
+
+### `building-portfolio-dashboard` (rollup)
+
+- *"build a portfolio dashboard for RDUCH-151, RDUCH-169, RDUCH-41"*
+- *"rollup status for these initiatives: ABC-100, ABC-200"*
+- *"executive rollup for value milestone RPOR-28633"*
+- *"VM status dashboard for PU-M2.1.10"*
+- *"summary across multiple initiatives"*
+- *"build me a status report covering 3 epics — the LT Connectivity one and the two Self-Hosted ones"*
+
+Accepts either a comma-separated list of Jira keys, or a single Value Milestone key (auto-discovers child initiatives).
 
 ## Prerequisites
 
