@@ -44,6 +44,28 @@
   .exec-card ul{padding-left:18px;font-size:13.5px;line-height:1.6;margin:0}
   .exec-card li{margin-bottom:4px}
 
+  .index-card{background:var(--bg-card);border-radius:var(--radius);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);margin-bottom:var(--gap)}
+  .index-card h3{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .index-card h3::before{content:"";width:3px;height:14px;background:#8172B3;border-radius:2px}
+  .index-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .index-filter-group{display:flex;align-items:center;gap:6px}
+  .index-filter-group label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px}
+  .index-filter-group select{padding:5px 9px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:12.5px;min-width:160px;color:var(--text-primary)}
+  .index-reset{padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:transparent;font-size:12px;cursor:pointer;color:var(--text-secondary)}
+  .index-reset:hover{background:#f4f6fa;color:var(--text-primary)}
+  .index-meta{margin-left:auto;font-size:11.5px;color:var(--text-secondary)}
+  .index-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .index-table thead th{text-align:left;padding:9px 10px;border-bottom:2px solid var(--border);color:var(--text-secondary);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;cursor:pointer;user-select:none}
+  .index-table thead th:hover{color:var(--text-primary);background:#f8f9fa}
+  .index-table tbody td{padding:10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+  .index-table tbody tr:hover{background:#f8f9fa}
+  .index-table tbody tr:last-child td{border-bottom:none}
+  .rag-pill{display:inline-flex;align-items:center;gap:7px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+  .rag-pill .rag-dot{width:10px;height:10px;box-shadow:none}
+  .rag-pill.rag-green{background:#dff1e3;color:#1f6b3a}
+  .rag-pill.rag-yellow{background:#fff3cd;color:#7a5b00}
+  .rag-pill.rag-red{background:#f8d7da;color:#a13030}
+
   .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:var(--gap);margin-bottom:var(--gap)}
   .initiative-card{background:var(--bg-card);border-radius:var(--radius);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);position:relative;overflow:hidden}
   .initiative-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
@@ -117,11 +139,122 @@
     {{PORTFOLIO_EXEC_HTML}}
   </section>
 
+  <section class="index-card" id="index-section">
+    <h3>Initiatives Index</h3>
+    <div class="index-filters">
+      <div class="index-filter-group">
+        <label for="filter-index-team">Owner Team</label>
+        <select id="filter-index-team"><option value="all">All</option></select>
+      </div>
+      <div class="index-filter-group">
+        <label for="filter-index-rpor">Parent RPOR</label>
+        <select id="filter-index-rpor"><option value="all">All</option></select>
+      </div>
+      <button class="index-reset" id="filter-index-reset">Reset</button>
+      <span class="index-meta" id="filter-index-count"></span>
+    </div>
+    <table class="index-table" id="index-table">
+      <thead>
+        <tr>
+          <th data-field="key">Key</th>
+          <th data-field="title">Initiative</th>
+          <th data-field="status">Status</th>
+          <th data-field="team">Owner Team</th>
+          <th data-field="rpor">Parent RPOR</th>
+        </tr>
+      </thead>
+      <tbody id="index-tbody"></tbody>
+    </table>
+  </section>
+
   <section class="cards-grid">
     {{INITIATIVE_CARDS_HTML}}
   </section>
 
   <div class="dashboard-footer">Portfolio dashboard · Snapshot {{SNAPSHOT_DATE}} · Sources: {{SOURCES_LINE}} · Audience: Engineering Directors &amp; Product Managers</div>
 </div>
+
+<script>
+const INITIATIVES_INDEX = {{INITIATIVES_INDEX_JSON}};
+const JIRA_BASE = "https://outsystemsrd.atlassian.net/browse/";
+const RAG_ORDER = {"red":0, "yellow":1, "green":2};
+
+class IndexTable {
+  constructor(data){
+    this.raw = data;
+    this.filtered = data;
+    this.sortField = "status";
+    this.sortDir = "asc";
+    this.init();
+  }
+  init(){
+    this.populateFilters();
+    this.bindEvents();
+    this.apply();
+  }
+  populateFilters(){
+    const teams = [...new Set(this.raw.map(d=>d.team).filter(Boolean))].sort();
+    const rpors = [...new Set(this.raw.map(d=>d.rpor_key).filter(Boolean))].sort();
+    teams.forEach(t=>{const o=document.createElement("option");o.value=t;o.textContent=t;document.getElementById("filter-index-team").appendChild(o);});
+    rpors.forEach(r=>{const o=document.createElement("option");o.value=r;const item=this.raw.find(x=>x.rpor_key===r);o.textContent=item?.rpor_label?`${r} — ${item.rpor_label}`:r;document.getElementById("filter-index-rpor").appendChild(o);});
+  }
+  bindEvents(){
+    ["filter-index-team","filter-index-rpor"].forEach(id=>{
+      document.getElementById(id).addEventListener("change", ()=>this.apply());
+    });
+    document.getElementById("filter-index-reset").addEventListener("click", ()=>{
+      ["filter-index-team","filter-index-rpor"].forEach(id=>document.getElementById(id).value="all");
+      this.apply();
+    });
+    document.querySelectorAll("#index-table thead th[data-field]").forEach(th=>{
+      th.addEventListener("click", ()=>{
+        const f = th.getAttribute("data-field");
+        if(this.sortField===f) this.sortDir = this.sortDir==="asc"?"desc":"asc";
+        else { this.sortField = f; this.sortDir = "asc"; }
+        this.render();
+      });
+    });
+  }
+  filterValue(id){
+    const v = document.getElementById(id).value;
+    return v === "all" ? null : v;
+  }
+  apply(){
+    const team = this.filterValue("filter-index-team");
+    const rpor = this.filterValue("filter-index-rpor");
+    this.filtered = this.raw.filter(d=>{
+      if(team && d.team !== team) return false;
+      if(rpor && d.rpor_key !== rpor) return false;
+      return true;
+    });
+    this.render();
+  }
+  render(){
+    const sorted = [...this.filtered].sort((a,b)=>{
+      let cmp;
+      if(this.sortField==="status") cmp = RAG_ORDER[a.rag_status]-RAG_ORDER[b.rag_status];
+      else {
+        const af=(a[this.sortField==="rpor"?"rpor_key":this.sortField]||"").toString().toLowerCase();
+        const bf=(b[this.sortField==="rpor"?"rpor_key":this.sortField]||"").toString().toLowerCase();
+        cmp = af<bf?-1:af>bf?1:0;
+      }
+      return this.sortDir==="asc"?cmp:-cmp;
+    });
+    const tbody = document.getElementById("index-tbody");
+    tbody.innerHTML = sorted.map(d=>`
+      <tr>
+        <td><a href="${JIRA_BASE}${d.key}" target="_blank">${d.key}</a></td>
+        <td><a href="dashboard-${d.key}.html">${d.title_short || d.title}</a></td>
+        <td><span class="rag-pill rag-${d.rag_status}"><span class="rag-dot rag-dot-${d.rag_status}"></span>${d.rag_label}</span></td>
+        <td>${d.team || '—'}</td>
+        <td>${d.rpor_key ? `<a href="${JIRA_BASE}${d.rpor_key}" target="_blank">${d.rpor_key}</a>${d.rpor_label ? ' — '+d.rpor_label : ''}` : '—'}</td>
+      </tr>
+    `).join("");
+    document.getElementById("filter-index-count").textContent = `${sorted.length} of ${this.raw.length} initiative${this.raw.length===1?"":"s"}`;
+  }
+}
+
+new IndexTable(INITIATIVES_INDEX);
+</script>
 </body>
 </html>

@@ -79,7 +79,8 @@ workflow:
 - Render the per-initiative dashboard to
   `<output-dir>/dashboard-<KEY>.html`
 - **Capture** the following synthesised content from the per-initiative
-  render — this populates the rollup card:
+  render — this populates the rollup card **and** the initiatives index
+  table:
   - `key`, `title`, `productboard_url` (if any)
   - `rag_status` (`green` | `yellow` | `red`)
   - `rag_label`, `rag_headline`
@@ -88,6 +89,21 @@ workflow:
     the inner card 3)
   - `sp_done`, `sp_in_flight`, `sp_remaining`, `sp_unsized_count`
   - `open_pr_count`
+  - **`team`** — engineering team (Jira-project → team mapping, see
+    inner skill's data-sources.md)
+  - **`rpor_key`** / **`rpor_label`** — the parent RPOR (Value
+    Milestone, Initiative, or Solution Enabler) for this epic.
+    Discover via:
+    ```bash
+    # Try direct linkage first
+    acli jira workitem search --jql "issue in linkedIssues(<KEY>) AND project = RPOR" \
+      --fields "key,summary,issuetype" --csv
+    # Fall back to summary-substring match if no direct link
+    acli jira workitem search --jql "project = RPOR AND summary ~ \"<VM-keyword>\"" \
+      --fields "key,summary,issuetype" --csv --limit 5
+    ```
+    `rpor_label` is a short tag like `PU-M2.1.8` (extract from the RPOR
+    summary prefix).
 
 Do the drill-downs **sequentially** — the Jira CLI is rate-limited and
 parallel calls can stomp on each other. A 5-initiative rollup typically
@@ -136,6 +152,22 @@ Same banned vocabulary applies (no `warrants attention`,
    - `{{KPI_*}}` — the seven KPI values from Step 3
    - `{{INITIATIVE_CARDS_HTML}}` — concatenated HTML of all initiative
      cards (see card structure below)
+   - `{{INITIATIVES_INDEX_JSON}}` — JSON array driving the filterable
+     **Initiatives Index** table. One object per initiative:
+     ```json
+     {
+       "key": "RDUCH-169",
+       "title_short": "PU-M4.13.1 LT Connectivity",
+       "rag_status": "green",
+       "rag_label": "Green",
+       "team": "Unification Charlie",
+       "rpor_key": "RPOR-28605",
+       "rpor_label": "PU-M4.13"
+     }
+     ```
+     The table renders Initiative title (linked to the per-initiative
+     dashboard), RAG pill, owner team, and parent RPOR. Filters at the
+     top let the user narrow by **Owner Team** and **Parent RPOR**.
    - `{{PORTFOLIO_EXEC_HTML}}` — the `<ul>...</ul>` from Step 4
    - `{{SNAPSHOT_DATE}}` — today's date
    - `{{SOURCES_LINE}}` — which sources were queried per initiative
