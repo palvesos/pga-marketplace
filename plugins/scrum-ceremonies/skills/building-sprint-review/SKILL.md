@@ -254,6 +254,64 @@ and substitute the same placeholders plus a few deck-specific ones:
 | `{{BURNDOWN_JSON}}` | Optional — see Step 7b. Pass `null` (literal, no quotes) to skip the burndown line chart; the template will fall back to the velocity-history bar instead. |
 | `{{VELOCITY_HISTORY_JSON}}` | Array `[{name, sp, current}]` for prior closed sprints + this one (`current:true` on the most recent). Pass `[]` to hide the fallback too. |
 | `{{KPI_BUCKETS_JSON}}` | Object keyed by bucket name; powers the click-to-drill table on the "By the numbers" slide. See **KPI bucket payload** below. Pass `{}` and the cards will render empty drilldowns. |
+| `{{SPRINT_HISTORY_HTML}}` | A `<table>` rendered on the Trends slide below the charts. Columns: Sprint · Capacity · Velocity · Overflow · Scope Δ · Delivery%. One row per sprint, newest first, current sprint marked with `class="current"`. See **Sprint history table** below. |
+
+**Sprint history table** (the `{{SPRINT_HISTORY_HTML}}` placeholder):
+
+```html
+<table>
+  <thead><tr>
+    <th>Sprint</th>
+    <th>Capacity</th>
+    <th>Velocity</th>
+    <th>Overflow</th>
+    <th>Scope Δ</th>
+    <th>Delivery%</th>
+  </tr></thead>
+  <tbody>
+    <tr class="current">
+      <td>RDUCH 26.Q2.4</td>
+      <td>96</td><td>50</td><td>46</td><td>+2</td>
+      <td class="delivered-mid">52%</td>
+    </tr>
+    <tr>
+      <td>RDUCH 26.Q2.3</td>
+      <td>40</td><td>33</td><td>7</td><td>+5</td>
+      <td class="delivered-high">82%</td>
+    </tr>
+    …
+  </tbody>
+</table>
+```
+
+**Per-sprint metrics** (compute for the current sprint + the last 4 closed
+sprints on the same board, so the table shows 5 rows including current):
+
+| Column | Definition |
+|---|---|
+| Sprint | Sprint name from the Sprint field |
+| Capacity | SP across tickets that were in the sprint at `startDate` (committed). Unsized = 0. |
+| Velocity | SP across tickets that reached `Done` while the sprint was active (use the changelog's `status → Done` timestamp, not the current ticket status, for closed sprints — items moved Done after the sprint closed don't count). |
+| Overflow | `Capacity − Velocity` *(plus any added-mid-sprint SP that also didn't deliver, if you can compute it; otherwise just `Capacity − Velocity`)* |
+| Scope Δ | Signed SP from sprint-field changelog: `+` SP added mid-sprint, `−` SP removed mid-sprint. Use `n/a` if changelog wasn't analyzed for that sprint. |
+| Delivery% | `Velocity / Capacity * 100`, rounded. `n/a` if Capacity = 0. |
+
+**Delivery% colour band** — apply one of these classes to the Delivery% cell:
+
+- `delivered-high` (green, `var(--color-done)`) when `pct >= 80%`
+- `delivered-mid` (blue, `var(--color-progress)`) when `50% <= pct < 80%`
+- `delivered-low` (red-ish) when `pct < 50%`
+
+**Empty cells** — if any of Capacity / Overflow / Scope Δ isn't available
+for a past sprint (e.g. you ran a quick mode that skipped per-sprint
+changelog analysis), render the cell as `<td class="empty">—</td>`. Don't
+fake numbers. The Velocity column should always be populated — if it
+can't be, drop the row entirely rather than half-fill it.
+
+**Row order**: newest sprint at the TOP (matches reading order for "what
+happened most recently"). Current sprint gets `class="current"` on its
+`<tr>` and renders with a highlighted background + a small "current" chip
+appended to the sprint name (CSS handles the chip).
 
 **KPI bucket payload** (shape of `{{KPI_BUCKETS_JSON}}`):
 

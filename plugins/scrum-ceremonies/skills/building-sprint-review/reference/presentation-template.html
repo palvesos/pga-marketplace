@@ -83,10 +83,27 @@
   .kpi-detail td.sp{text-align:right;font-variant-numeric:tabular-nums}
   .kpi-detail .empty-row{text-align:center;color:var(--text-secondary);font-style:italic;padding:24px}
 
-  .chart-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:24px;margin-top:8px;flex:1;min-height:0}
+  .chart-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:24px;margin-top:8px;min-height:300px}
   .chart-card{background:#f4f6fa;border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column}
   .chart-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin-bottom:12px}
-  .chart-card .canvas-wrap{position:relative;flex:1;min-height:280px}
+  .chart-card .canvas-wrap{position:relative;flex:1;min-height:240px}
+
+  /* Sprint history table on the Trends slide */
+  .sprint-history{margin-top:24px}
+  .sprint-history h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:baseline;gap:10px}
+  .sprint-history h3 .hint{font-size:11px;color:var(--text-secondary);text-transform:none;letter-spacing:0;font-weight:400}
+  .sprint-history table{width:100%;border-collapse:collapse;font-size:13px;background:#f4f6fa;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .sprint-history th{text-align:right;padding:10px 14px;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-secondary);font-weight:600;border-bottom:2px solid var(--border);background:#eef0f3;white-space:nowrap}
+  .sprint-history th:first-child{text-align:left}
+  .sprint-history td{padding:9px 14px;border-bottom:1px solid #eaecf1;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-primary)}
+  .sprint-history td:first-child{text-align:left;font-weight:600}
+  .sprint-history tr:last-child td{border-bottom:none}
+  .sprint-history tr.current td{background:rgba(76,114,176,.10);font-weight:600}
+  .sprint-history tr.current td:first-child::after{content:"current";color:var(--color-progress);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;margin-left:8px;background:rgba(76,114,176,.15);padding:2px 8px;border-radius:4px}
+  .sprint-history td.delivered-high{color:var(--color-done)}
+  .sprint-history td.delivered-mid{color:var(--color-progress)}
+  .sprint-history td.delivered-low{color:#b0331e}
+  .sprint-history td.empty{color:#b8bcc6}
 
   .demo-slide .demo-key{display:inline-block;background:var(--color-progress);color:#fff;padding:4px 12px;border-radius:6px;font-weight:600;font-size:16px;margin-right:10px;font-family:'SF Mono','Menlo',monospace}
   .demo-slide .demo-summary{font-size:32px;font-weight:600;line-height:1.25;margin-bottom:24px;color:var(--text-primary)}
@@ -200,6 +217,10 @@
         <h3>Burndown (this sprint)</h3>
         <div class="canvas-wrap"><canvas id="burndown-chart"></canvas></div>
       </div>
+    </div>
+    <div class="sprint-history">
+      <h3>Sprint history <span class="hint">capacity vs. delivery across recent sprints</span></h3>
+      {{SPRINT_HISTORY_HTML}}
     </div>
   </section>
 
