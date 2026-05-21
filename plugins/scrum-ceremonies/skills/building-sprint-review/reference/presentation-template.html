@@ -85,6 +85,16 @@
   .item-sp{font-variant-numeric:tabular-nums;color:var(--text-secondary);font-size:14px}
   .item-reason{display:block;font-size:13px;color:#b0331e;font-style:italic;margin-top:2px}
 
+  /* Epic grouping on the "What we shipped" slide */
+  .delivered-list .epic-group{display:block;padding:14px 0 6px;border-bottom:1px solid #eaecf1}
+  .delivered-list .epic-group:last-child{border-bottom:none}
+  .delivered-list .epic-group .epic-header{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--color-progress);font-weight:700}
+  .delivered-list .epic-group .epic-header .epic-key{font-family:'SF Mono','Menlo',monospace;font-size:12px;background:#eef0f3;color:#4a525e;padding:2px 8px;border-radius:4px;text-transform:none;letter-spacing:0;font-weight:600}
+  .delivered-list .epic-group .epic-header .epic-name{color:var(--text-primary)}
+  .delivered-list .epic-group .epic-header .epic-totals{margin-left:auto;font-size:12px;color:var(--text-secondary);text-transform:none;letter-spacing:0;font-weight:500;font-variant-numeric:tabular-nums}
+  .delivered-list .epic-group ul{list-style:none;padding-left:0;margin:0}
+  .delivered-list .epic-group li{padding:6px 0;border-bottom:none}
+
   .empty-state{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-style:italic;font-size:20px}
 
   .closing-slide{background:var(--bg-accent);color:var(--text-on-dark);align-items:center;justify-content:center;text-align:center}

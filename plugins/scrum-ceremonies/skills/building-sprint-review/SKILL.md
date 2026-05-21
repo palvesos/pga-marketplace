@@ -90,6 +90,19 @@ For every ticket in the sprint, capture:
 - `key`, `summary`, `status.name`, `assignee.displayName` (or emailAddress),
   `issuetype.name`, `priority.name`, `labels[]`
 - **Story Points** from `customfield_10004`
+- **Parent Epic** — request `parent` and `customfield_10007` (Epic Link) so
+  Done items can be grouped by epic on the "What we shipped" slide. The
+  search query MUST include these fields explicitly:
+
+  ```
+  fields: ["summary","status","assignee","issuetype","priority","labels",
+           "customfield_10004","customfield_10007","parent",
+           "customfield_10006","customfield_12600","resolutiondate","created"]
+  ```
+
+  For each ticket, extract `parent.key` + `parent.fields.summary` (or fall
+  back to `customfield_10007` if `parent` is not set on the issue type).
+  Tickets with no parent get grouped under `(No epic)`.
 - **Original commitment flag** — did the ticket start in the sprint or get
   added mid-sprint? Use the Sprint field history (`changelog`) to detect
   added/removed mid-sprint.
@@ -233,13 +246,42 @@ and substitute the same placeholders plus a few deck-specific ones:
 | `{{GOAL_OUTCOME_CLASS}}` | One of `achieved` / `partial` / `missed` / `nogoal` (lowercase, drives the banner colour) |
 | `{{GOAL_OUTCOME_REASON}}` | One sentence justifying the outcome verdict |
 | `{{DEMO_SLIDES_HTML}}` | One `<section class="slide demo-slide">` per `Committed & Done` story (then `Added & Done`). See the inline demo-slide markup below. |
-| `{{COMMITTED_DONE_LIST_HTML}}` | `<li>` rows for the "What we shipped" slide. Each: `<li><span class="item-key">KEY</span><span class="item-summary">summary</span><span class="item-sp">N SP</span></li>` |
+| `{{COMMITTED_DONE_LIST_HTML}}` | **Grouped by parent Epic.** One outer `<li class="epic-group">` per epic, ordered by total SP descending. Each contains an epic header + a nested `<ul>` of the items in that epic. See the "Delivered-list epic grouping" structure below. |
 | `{{SCOPE_CHANGES_HTML}}` | Three small sections: Added & Done, Added & Carryover, Removed. If all three empty: render `<div class="empty-state">No scope changes this sprint.</div>` |
 | `{{CARRYOVER_LIST_HTML}}` | `<li>` rows like the delivered list, plus an `<span class="item-reason">…</span>` with the one-phrase reason. Empty-state line if nothing carried over. |
 | `{{NEXT_SPRINT_HTML}}` | `<li>` rows for the next-sprint preview. Empty-state line if no future sprint. |
 | `{{COMMITTED_DONE_SP}}` / `{{ADDED_DONE_SP}}` | Raw numbers (SP) for the doughnut chart on slide 4 |
 | `{{BURNDOWN_JSON}}` | Optional — see Step 7b. Pass `null` (literal, no quotes) to skip the burndown line chart; the template will fall back to the velocity-history bar instead. |
 | `{{VELOCITY_HISTORY_JSON}}` | Array `[{name, sp, current}]` for prior closed sprints + this one (`current:true` on the most recent). Pass `[]` to hide the fallback too. |
+
+**Delivered-list epic grouping** (the `{{COMMITTED_DONE_LIST_HTML}}` placeholder):
+
+```html
+<li class="epic-group">
+  <div class="epic-header">
+    <span class="epic-key">RDUCH-188</span>
+    <span class="epic-name">LT Connectivity — Cross-tenant DoS (RQ02)</span>
+    <span class="epic-totals">3 items · 7 SP</span>
+  </div>
+  <ul>
+    <li><span class="item-key">RDUCH-189</span><span class="item-summary">M1 — AuthFailureCooldownService …</span><span class="item-sp">3 SP</span></li>
+    <li><span class="item-key">RDUCH-177</span><span class="item-summary">Solution Design and LLD</span><span class="item-sp">2 SP</span></li>
+    …
+  </ul>
+</li>
+```
+
+**Grouping rules:**
+
+- One outer `<li class="epic-group">` per distinct parent Epic.
+- Sort groups by **total SP descending**; ties broken by item count, then
+  alphabetically by epic key.
+- The `epic-name` is `parent.fields.summary` (strip leading `[Tags]` if it
+  makes the header noisy — keep the human-readable portion).
+- Items with no parent epic are collected into a final group with
+  `epic-key` = `(no epic)` and no `epic-key` chip rendered.
+- If there is only ONE distinct epic across all Done items, you may
+  render a flat list instead of a single trivial group — your call.
 
 **Demo-slide inner structure** (one section per Done story):
 
