@@ -1,0 +1,14 @@
+# Skill outputs — these are generated artifacts the user produces by running
+# a skill from this directory; they belong with the user, not in the repo.
+
+# building-sprint-review (scrum-ceremonies)
+sprint-review-*.md
+sprint-review-*.html
+
+# building-initiative-dashboard / building-portfolio-dashboard (initiative-dashboards)
+dashboard.html
+dashboard-*.html
+
+# Editor / OS noise
+.DS_Store
+*.swp
