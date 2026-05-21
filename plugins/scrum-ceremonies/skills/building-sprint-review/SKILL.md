@@ -253,6 +253,25 @@ and substitute the same placeholders plus a few deck-specific ones:
 | `{{COMMITTED_DONE_SP}}` / `{{ADDED_DONE_SP}}` | Raw numbers (SP) for the doughnut chart on slide 4 |
 | `{{BURNDOWN_JSON}}` | Optional — see Step 7b. Pass `null` (literal, no quotes) to skip the burndown line chart; the template will fall back to the velocity-history bar instead. |
 | `{{VELOCITY_HISTORY_JSON}}` | Array `[{name, sp, current}]` for prior closed sprints + this one (`current:true` on the most recent). Pass `[]` to hide the fallback too. |
+| `{{KPI_BUCKETS_JSON}}` | Object keyed by bucket name; powers the click-to-drill table on the "By the numbers" slide. See **KPI bucket payload** below. Pass `{}` and the cards will render empty drilldowns. |
+
+**KPI bucket payload** (shape of `{{KPI_BUCKETS_JSON}}`):
+
+```json
+{
+  "done":       [{"key":"RDUCH-189","summary":"...","status":"Done","sp":3,"assignee":"Martim Gouveia"}, ...],
+  "carryover":  [{"key":"RDUCH-157","summary":"...","status":"Blocked","sp":5,"assignee":"...","reason":"blocked on open questions"}, ...],
+  "scopeAdded": [],
+  "bugs":       [],
+  "unsized":    [{"key":"RDUCH-178","summary":"...","status":"To Do","sp":null,"assignee":"..."}]
+}
+```
+
+- `done` is shared by both the **Completed SP** and **Velocity** cards (same underlying items, two metric views).
+- `carryover` rows must include a `reason` string (same one-phrase reason used in the Carryover slide).
+- `unsized` items have `sp: null`; the table renders `—`.
+- Empty buckets are fine — the card stays clickable, the drawer opens with "No items in this bucket."
+- Item fields are plain strings; the deck escapes them via `textContent` at render time, so do NOT pre-HTML-escape.
 
 **Delivered-list epic grouping** (the `{{COMMITTED_DONE_LIST_HTML}}` placeholder):
 

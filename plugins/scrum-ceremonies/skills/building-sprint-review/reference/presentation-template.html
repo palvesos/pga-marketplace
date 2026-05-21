@@ -56,13 +56,32 @@
   .outcome-reason{font-size:18px;color:var(--text-secondary);max-width:900px;line-height:1.6}
 
   .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
-  .kpi{background:#f4f6fa;border:1px solid var(--border);border-radius:12px;padding:22px 24px}
+  .kpi{background:#f4f6fa;border:1px solid var(--border);border-radius:12px;padding:22px 24px;position:relative}
   .kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);font-weight:600;margin-bottom:8px}
   .kpi .value{font-size:42px;font-weight:700;line-height:1;color:var(--text-primary)}
   .kpi .sub{font-size:13px;color:var(--text-secondary);margin-top:6px}
   .kpi.done .value{color:var(--color-done)}
   .kpi.flight .value{color:var(--color-progress)}
   .kpi.warn .value{color:#b0331e}
+  /* Drill-down: clickable KPI cards open a detail table below the grid */
+  .kpi.clickable{cursor:pointer;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease}
+  .kpi.clickable::after{content:"▾";position:absolute;top:14px;right:14px;font-size:10px;color:var(--text-secondary);opacity:.6}
+  .kpi.clickable:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.08)}
+  .kpi.clickable.active{border-color:var(--color-progress);box-shadow:0 0 0 2px rgba(76,114,176,.25)}
+  .kpi.clickable.active::after{content:"▴";color:var(--color-progress);opacity:1}
+  .kpi-detail{margin-top:18px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:0 22px;max-height:0;overflow:hidden;opacity:0;transition:max-height .25s ease, padding .25s ease, opacity .25s ease}
+  .kpi-detail.open{padding:16px 22px;max-height:420px;overflow:auto;opacity:1}
+  .kpi-detail .detail-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .kpi-detail .detail-header h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin:0}
+  .kpi-detail .detail-header .close{margin-left:auto;background:none;border:none;color:var(--text-secondary);font-size:20px;line-height:1;cursor:pointer;padding:0 6px;border-radius:4px}
+  .kpi-detail .detail-header .close:hover{color:var(--text-primary);background:#f4f6fa}
+  .kpi-detail table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .kpi-detail th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-secondary);font-weight:600;padding:8px 10px;border-bottom:2px solid var(--border);white-space:nowrap}
+  .kpi-detail td{padding:7px 10px;border-bottom:1px solid #eaecf1;vertical-align:top}
+  .kpi-detail tr:last-child td{border-bottom:none}
+  .kpi-detail td a{color:var(--color-progress);font-family:'SF Mono','Menlo',monospace;font-weight:600;font-size:12px}
+  .kpi-detail td.sp{text-align:right;font-variant-numeric:tabular-nums}
+  .kpi-detail .empty-row{text-align:center;color:var(--text-secondary);font-style:italic;padding:24px}
 
   .chart-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:24px;margin-top:8px;flex:1;min-height:0}
   .chart-card{background:#f4f6fa;border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column}
@@ -156,15 +175,16 @@
   <!-- Slide 3: Numbers at a glance -->
   <section class="slide">
     <div class="eyebrow">By the numbers</div>
-    <h2>Where we landed</h2>
+    <h2>Where we landed <span style="font-size:13px;color:var(--text-secondary);font-weight:400;letter-spacing:0;text-transform:none;margin-left:8px">— click any card to drill in</span></h2>
     <div class="kpi-grid">
-      <div class="kpi done"><div class="label">Completed SP</div><div class="value">{{COMPLETED_SP}}</div><div class="sub">of {{COMMITTED_SP}} committed · {{COMPLETION_PCT}}% delivered</div></div>
-      <div class="kpi flight"><div class="label">Velocity</div><div class="value">{{VELOCITY}}</div><div class="sub">avg last 3: {{AVG_VELOCITY}}</div></div>
-      <div class="kpi"><div class="label">Carryover</div><div class="value">{{CARRYOVER_SP}}</div><div class="sub">SP rolling to next sprint</div></div>
-      <div class="kpi"><div class="label">Scope added</div><div class="value">{{SCOPE_ADDED_SP}}</div><div class="sub">SP mid-sprint</div></div>
-      <div class="kpi warn"><div class="label">Bugs found</div><div class="value">{{BUGS_FOUND}}</div><div class="sub">in sprint window</div></div>
-      <div class="kpi warn"><div class="label">Unsized</div><div class="value">{{UNSIZED_COUNT}}</div><div class="sub">need estimation</div></div>
+      <div class="kpi done clickable" data-bucket="done"><div class="label">Completed SP</div><div class="value">{{COMPLETED_SP}}</div><div class="sub">of {{COMMITTED_SP}} committed · {{COMPLETION_PCT}}% delivered</div></div>
+      <div class="kpi flight clickable" data-bucket="done"><div class="label">Velocity</div><div class="value">{{VELOCITY}}</div><div class="sub">avg last 3: {{AVG_VELOCITY}}</div></div>
+      <div class="kpi clickable" data-bucket="carryover"><div class="label">Carryover</div><div class="value">{{CARRYOVER_SP}}</div><div class="sub">SP rolling to next sprint</div></div>
+      <div class="kpi clickable" data-bucket="scopeAdded"><div class="label">Scope added</div><div class="value">{{SCOPE_ADDED_SP}}</div><div class="sub">SP mid-sprint</div></div>
+      <div class="kpi warn clickable" data-bucket="bugs"><div class="label">Bugs found</div><div class="value">{{BUGS_FOUND}}</div><div class="sub">in sprint window</div></div>
+      <div class="kpi warn clickable" data-bucket="unsized"><div class="label">Unsized</div><div class="value">{{UNSIZED_COUNT}}</div><div class="sub">need estimation</div></div>
     </div>
+    <div class="kpi-detail" id="kpi-detail"></div>
   </section>
 
   <!-- Slide 4: Burndown / velocity -->
@@ -243,6 +263,15 @@ const SPLIT_DATA = {
   carryover: {{CARRYOVER_SP}}
 };
 const VELOCITY_HISTORY = {{VELOCITY_HISTORY_JSON}};
+const KPI_BUCKETS = {{KPI_BUCKETS_JSON}};
+const JIRA_BASE = "https://outsystemsrd.atlassian.net/browse/";
+const BUCKET_LABELS = {
+  done: "Completed items (velocity)",
+  carryover: "Carryover items",
+  scopeAdded: "Items added mid-sprint",
+  bugs: "Bugs found in sprint window",
+  unsized: "Unsized items"
+};
 
 class Deck {
   constructor(){
@@ -250,7 +279,9 @@ class Deck {
     this.idx = 0;
     this.counter = document.getElementById("counter");
     this.charts = {};
+    this.activeBucket = null;
     this.bind();
+    this.bindKpiCards();
     this.show(0);
     this.renderCharts();
   }
@@ -263,12 +294,90 @@ class Deck {
       else if (e.key === "End") { e.preventDefault(); this.show(this.slides.length - 1); }
       else if (e.key === "f" || e.key === "F") { this.toggleFullscreen(); }
       else if (e.key === "p" || e.key === "P") { window.print(); }
+      else if (e.key === "Escape" && this.activeBucket) { this.closeKpiDetail(); }
     });
     document.getElementById("btn-prev").addEventListener("click", () => this.prev());
     document.getElementById("btn-next").addEventListener("click", () => this.next());
   }
+  bindKpiCards(){
+    document.querySelectorAll(".kpi.clickable").forEach(card => {
+      card.addEventListener("click", () => {
+        const bucket = card.dataset.bucket;
+        if (this.activeBucket === bucket) { this.closeKpiDetail(); }
+        else { this.openKpiDetail(bucket, card); }
+      });
+    });
+  }
+  openKpiDetail(bucket, sourceCard){
+    this.activeBucket = bucket;
+    document.querySelectorAll(".kpi.clickable").forEach(c => {
+      c.classList.toggle("active", c.dataset.bucket === bucket);
+    });
+    const detail = document.getElementById("kpi-detail");
+    this.renderBucketTable(detail, bucket);
+    detail.classList.add("open");
+  }
+  closeKpiDetail(){
+    this.activeBucket = null;
+    document.querySelectorAll(".kpi.clickable").forEach(c => c.classList.remove("active"));
+    document.getElementById("kpi-detail").classList.remove("open");
+  }
+  renderBucketTable(host, bucket){
+    host.innerHTML = "";
+    const items = (KPI_BUCKETS && KPI_BUCKETS[bucket]) || [];
+    const label = BUCKET_LABELS[bucket] || bucket;
+
+    const header = document.createElement("div");
+    header.className = "detail-header";
+    const h4 = document.createElement("h4");
+    h4.textContent = `${label} — ${items.length} item${items.length === 1 ? "" : "s"}`;
+    const close = document.createElement("button");
+    close.className = "close";
+    close.setAttribute("aria-label", "Close");
+    close.textContent = "×";
+    close.addEventListener("click", (e) => { e.stopPropagation(); this.closeKpiDetail(); });
+    header.appendChild(h4);
+    header.appendChild(close);
+    host.appendChild(header);
+
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-row";
+      empty.textContent = "No items in this bucket.";
+      host.appendChild(empty);
+      return;
+    }
+
+    const showReason = bucket === "carryover";
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const trh = document.createElement("tr");
+    ["Key","Summary","Status","SP","Assignee"].forEach(h => {
+      const th = document.createElement("th"); th.textContent = h; trh.appendChild(th);
+    });
+    if (showReason) { const th = document.createElement("th"); th.textContent = "Reason"; trh.appendChild(th); }
+    thead.appendChild(trh); table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    items.forEach(it => {
+      const tr = document.createElement("tr");
+      const tdK = document.createElement("td");
+      const a = document.createElement("a");
+      a.href = JIRA_BASE + it.key; a.target = "_blank"; a.textContent = it.key;
+      tdK.appendChild(a); tr.appendChild(tdK);
+      const tdS = document.createElement("td"); tdS.textContent = it.summary || ""; tr.appendChild(tdS);
+      const tdSt = document.createElement("td"); tdSt.textContent = it.status || ""; tr.appendChild(tdSt);
+      const tdSp = document.createElement("td"); tdSp.className = "sp"; tdSp.textContent = (it.sp == null ? "—" : it.sp); tr.appendChild(tdSp);
+      const tdA = document.createElement("td"); tdA.textContent = it.assignee || "unassigned"; tr.appendChild(tdA);
+      if (showReason) { const tdR = document.createElement("td"); tdR.textContent = it.reason || ""; tr.appendChild(tdR); }
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    host.appendChild(table);
+  }
   show(i){
     if (i < 0 || i >= this.slides.length) return;
+    if (this.activeBucket) this.closeKpiDetail();
     this.slides[this.idx].classList.remove("active");
     this.idx = i;
     this.slides[this.idx].classList.add("active");
