@@ -1,0 +1,71 @@
+test_type: "activation"
+name: "building-sprint-review"
+skill_name: "building-sprint-review"
+
+prompts:
+  # Explicit positives — trigger phrases from the skill description
+  - prompt: "build a sprint review for RDUCH Sprint 24"
+    activated_skills:
+      - building-sprint-review
+    not_activated_skills: []
+
+  - prompt: "prepare the sprint review deck for sprint 12345"
+    activated_skills:
+      - building-sprint-review
+    not_activated_skills: []
+    read_references:
+      - reference/presentation-template.html
+
+  - prompt: "generate sprint review report for RDUCH Sprint 24"
+    activated_skills:
+      - building-sprint-review
+    not_activated_skills: []
+    read_references:
+      - reference/report-template.md
+
+  - prompt: "make slides for tomorrow's sprint review of RDUCH Sprint 25"
+    activated_skills:
+      - building-sprint-review
+    not_activated_skills: []
+
+  - prompt: "wrap up sprint 24 with a review presentation and report"
+    activated_skills:
+      - building-sprint-review
+    not_activated_skills: []
+    read_references:
+      - reference/data-sources.md
+
+  - prompt: "build the sprint review package for Unification Charlie sprint 24"
+    activated_skills:
+      - building-sprint-review
+    not_activated_skills: []
+
+  # Negatives — should NOT activate this skill
+  - prompt: "what's the status of RDUCH-183?"
+    activated_skills: []
+    not_activated_skills:
+      - building-sprint-review
+
+  - prompt: "build a dashboard for RDUCH-169"
+    activated_skills: []
+    not_activated_skills:
+      - building-sprint-review
+
+  - prompt: "run a sprint retrospective for RDUCH Sprint 24"
+    activated_skills: []
+    not_activated_skills:
+      - building-sprint-review
+
+  - prompt: "plan the next sprint for Unification Charlie"
+    activated_skills: []
+    not_activated_skills:
+      - building-sprint-review
+
+  - prompt: "build an executive update for the LT Connectivity initiative"
+    activated_skills: []
+    not_activated_skills:
+      - building-sprint-review
+
+thresholds:
+  min_activation_rate: 0.70
+  block_deprecation: true

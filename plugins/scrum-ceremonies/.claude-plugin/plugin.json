@@ -1,0 +1,9 @@
+{
+  "name": "scrum-ceremonies",
+  "description": "Tooling for Scrum Masters and Engineering Managers to produce ceremony artifacts from Jira. Currently ships building-sprint-review, which builds a Markdown sprint review report and a self-contained HTML slide deck for the live review meeting.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Paulo Alves",
+    "email": "paulo.alves@outsystems.com"
+  }
+}

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{DECK_TITLE}}</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg-deck:#0f1220;
+    --bg-slide:#ffffff;
+    --bg-accent:#1a1a2e;
+    --text-primary:#1f2330;
+    --text-secondary:#6c757d;
+    --text-on-dark:#ffffff;
+    --border:#e6e8ee;
+    --color-progress:#4C72B0;
+    --color-review:#DD8452;
+    --color-done:#55A868;
+    --color-warn:#f5b800;
+    --color-bad:#C44E52;
+    --slide-pad:64px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-deck);color:var(--text-primary);overflow:hidden}
+  a{color:#3a6fb5;text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg-slide);padding:var(--slide-pad);overflow:auto}
+  .slide.active{display:flex}
+  .slide.title-slide{background:var(--bg-accent);color:var(--text-on-dark);justify-content:center;align-items:flex-start;text-align:left}
+  .slide.title-slide .eyebrow{font-size:14px;letter-spacing:.4px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:14px}
+  .slide.title-slide h1{font-size:64px;font-weight:700;line-height:1.05;letter-spacing:-.5px;margin-bottom:24px}
+  .slide.title-slide .meta{font-size:18px;color:rgba(255,255,255,.75);line-height:1.6}
+  .slide.title-slide .goal{margin-top:32px;font-size:20px;font-style:italic;color:rgba(255,255,255,.85);padding-left:18px;border-left:3px solid var(--color-progress);max-width:900px}
+
+  .slide .eyebrow{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-secondary);font-weight:600;margin-bottom:8px}
+  .slide h2{font-size:36px;font-weight:700;line-height:1.1;margin-bottom:24px;color:var(--text-primary)}
+  .slide h3{font-size:22px;font-weight:600;margin-bottom:16px}
+  .slide p{font-size:18px;line-height:1.6;margin-bottom:12px}
+  .slide ul{font-size:18px;line-height:1.7;padding-left:28px;margin-bottom:12px}
+  .slide li{margin-bottom:6px}
+
+  .outcome-banner{display:inline-flex;align-items:center;gap:14px;padding:18px 28px;border-radius:14px;font-size:28px;font-weight:700;margin-bottom:18px}
+  .outcome-banner .dot{width:18px;height:18px;border-radius:50%}
+  .outcome-achieved{background:#dff1e3;color:#1f6b3a}
+  .outcome-achieved .dot{background:var(--color-done)}
+  .outcome-partial{background:#fff3cd;color:#7a5b00}
+  .outcome-partial .dot{background:var(--color-warn)}
+  .outcome-missed{background:#f8d7da;color:#7a2a2d}
+  .outcome-missed .dot{background:var(--color-bad)}
+  .outcome-nogoal{background:#eef0f3;color:#4a525e}
+  .outcome-nogoal .dot{background:var(--text-secondary)}
+  .outcome-reason{font-size:18px;color:var(--text-secondary);max-width:900px;line-height:1.6}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+  .kpi{background:#f4f6fa;border:1px solid var(--border);border-radius:12px;padding:22px 24px}
+  .kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);font-weight:600;margin-bottom:8px}
+  .kpi .value{font-size:42px;font-weight:700;line-height:1;color:var(--text-primary)}
+  .kpi .sub{font-size:13px;color:var(--text-secondary);margin-top:6px}
+  .kpi.done .value{color:var(--color-done)}
+  .kpi.flight .value{color:var(--color-progress)}
+  .kpi.warn .value{color:#b0331e}
+
+  .chart-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:24px;margin-top:8px;flex:1;min-height:0}
+  .chart-card{background:#f4f6fa;border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column}
+  .chart-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin-bottom:12px}
+  .chart-card .canvas-wrap{position:relative;flex:1;min-height:280px}
+
+  .demo-slide .demo-key{display:inline-block;background:var(--color-progress);color:#fff;padding:4px 12px;border-radius:6px;font-weight:600;font-size:16px;margin-right:10px;font-family:'SF Mono','Menlo',monospace}
+  .demo-slide .demo-summary{font-size:32px;font-weight:600;line-height:1.25;margin-bottom:24px;color:var(--text-primary)}
+  .demo-slide .demo-meta{display:flex;gap:18px;font-size:15px;color:var(--text-secondary);margin-bottom:28px;flex-wrap:wrap}
+  .demo-slide .demo-meta span{padding:6px 14px;background:#f4f6fa;border-radius:20px;border:1px solid var(--border)}
+  .demo-slide .demo-meta a{color:var(--color-progress);font-weight:600}
+  .demo-slide .demo-notes{flex:1;background:#f4f6fa;border:1px dashed #c8ccd6;border-radius:10px;padding:22px;color:var(--text-secondary);font-style:italic;font-size:15px;line-height:1.6}
+  .demo-slide .demo-notes::before{content:"Speaker notes — what was delivered, why it matters, what to demo:";display:block;text-transform:uppercase;letter-spacing:.4px;font-size:10px;font-style:normal;font-weight:700;color:#9aa0a6;margin-bottom:10px}
+
+  .delivered-list,.carryover-list,.next-list{font-size:18px;line-height:1.6;list-style:none;padding:0}
+  .delivered-list li,.carryover-list li,.next-list li{padding:10px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:14px;align-items:baseline}
+  .delivered-list li:last-child,.carryover-list li:last-child,.next-list li:last-child{border-bottom:none}
+  .item-key{display:inline-block;font-family:'SF Mono','Menlo',monospace;color:var(--color-progress);font-weight:600;min-width:120px;font-size:14px}
+  .item-summary{flex:1}
+  .item-sp{font-variant-numeric:tabular-nums;color:var(--text-secondary);font-size:14px}
+  .item-reason{display:block;font-size:13px;color:#b0331e;font-style:italic;margin-top:2px}
+
+  .empty-state{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-style:italic;font-size:20px}
+
+  .closing-slide{background:var(--bg-accent);color:var(--text-on-dark);align-items:center;justify-content:center;text-align:center}
+  .closing-slide h2{color:var(--text-on-dark);font-size:54px}
+  .closing-slide p{font-size:18px;color:rgba(255,255,255,.75);margin-top:20px;max-width:700px}
+  .closing-slide .links{display:flex;gap:24px;margin-top:32px;flex-wrap:wrap;justify-content:center}
+  .closing-slide .links a{padding:12px 24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;color:var(--text-on-dark);font-size:15px}
+  .closing-slide .links a:hover{background:rgba(255,255,255,.16);text-decoration:none}
+
+  .deck-chrome{position:fixed;bottom:14px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:12px;color:rgba(255,255,255,.5);pointer-events:none;z-index:10}
+  .deck-chrome .nav{pointer-events:auto;display:flex;gap:8px}
+  .deck-chrome button{padding:6px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:6px;color:rgba(255,255,255,.75);font-size:12px;cursor:pointer}
+  .deck-chrome button:hover{background:rgba(255,255,255,.16);color:#fff}
+  .deck-chrome .counter{font-variant-numeric:tabular-nums;background:rgba(255,255,255,.08);padding:6px 12px;border-radius:6px}
+  .deck-chrome .hint{font-size:11px;letter-spacing:.3px;color:rgba(255,255,255,.4)}
+
+  @media print{
+    html,body{height:auto;overflow:visible;background:#fff}
+    .deck{display:block;width:auto;height:auto}
+    .slide{display:flex !important;position:relative;inset:auto;width:100%;height:100vh;page-break-after:always;border-bottom:1px solid #eee}
+    .slide:last-child{page-break-after:auto}
+    .deck-chrome{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- Slide 1: Title -->
+  <section class="slide title-slide active">
+    <div class="eyebrow">Sprint Review</div>
+    <h1>{{DECK_TITLE}}</h1>
+    <div class="meta">
+      {{TEAM_NAME}}<br>
+      {{SPRINT_DATES}}
+    </div>
+    <div class="goal">"{{SPRINT_GOAL}}"</div>
+  </section>
+
+  <!-- Slide 2: Goal outcome -->
+  <section class="slide">
+    <div class="eyebrow">Sprint goal</div>
+    <h2>{{SPRINT_GOAL_SHORT}}</h2>
+    <div class="outcome-banner outcome-{{GOAL_OUTCOME_CLASS}}">
+      <span class="dot"></span>
+      <span>{{GOAL_OUTCOME}}</span>
+    </div>
+    <p class="outcome-reason">{{GOAL_OUTCOME_REASON}}</p>
+  </section>
+
+  <!-- Slide 3: Numbers at a glance -->
+  <section class="slide">
+    <div class="eyebrow">By the numbers</div>
+    <h2>Where we landed</h2>
+    <div class="kpi-grid">
+      <div class="kpi done"><div class="label">Completed SP</div><div class="value">{{COMPLETED_SP}}</div><div class="sub">of {{COMMITTED_SP}} committed · {{COMPLETION_PCT}}% delivered</div></div>
+      <div class="kpi flight"><div class="label">Velocity</div><div class="value">{{VELOCITY}}</div><div class="sub">avg last 3: {{AVG_VELOCITY}}</div></div>
+      <div class="kpi"><div class="label">Carryover</div><div class="value">{{CARRYOVER_SP}}</div><div class="sub">SP rolling to next sprint</div></div>
+      <div class="kpi"><div class="label">Scope added</div><div class="value">{{SCOPE_ADDED_SP}}</div><div class="sub">SP mid-sprint</div></div>
+      <div class="kpi warn"><div class="label">Bugs found</div><div class="value">{{BUGS_FOUND}}</div><div class="sub">in sprint window</div></div>
+      <div class="kpi warn"><div class="label">Unsized</div><div class="value">{{UNSIZED_COUNT}}</div><div class="sub">need estimation</div></div>
+    </div>
+  </section>
+
+  <!-- Slide 4: Burndown / velocity -->
+  <section class="slide">
+    <div class="eyebrow">Trends</div>
+    <h2>Burndown & velocity</h2>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Completion split</h3>
+        <div class="canvas-wrap"><canvas id="split-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Burndown (this sprint)</h3>
+        <div class="canvas-wrap"><canvas id="burndown-chart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 5: What we delivered -->
+  <section class="slide">
+    <div class="eyebrow">Delivered</div>
+    <h2>What we shipped</h2>
+    <ul class="delivered-list">{{COMMITTED_DONE_LIST_HTML}}</ul>
+  </section>
+
+  <!-- Slide 6+: Demo slides (one per Done story) -->
+  {{DEMO_SLIDES_HTML}}
+
+  <!-- Slide N-3: Scope changes -->
+  <section class="slide">
+    <div class="eyebrow">Scope changes</div>
+    <h2>Added, removed, slipped</h2>
+    {{SCOPE_CHANGES_HTML}}
+  </section>
+
+  <!-- Slide N-2: Carryover -->
+  <section class="slide">
+    <div class="eyebrow">Carryover</div>
+    <h2>Rolling to next sprint</h2>
+    <ul class="carryover-list">{{CARRYOVER_LIST_HTML}}</ul>
+  </section>
+
+  <!-- Slide N-1: Next sprint preview -->
+  <section class="slide">
+    <div class="eyebrow">Next sprint</div>
+    <h2>What's coming up</h2>
+    <ul class="next-list">{{NEXT_SPRINT_HTML}}</ul>
+  </section>
+
+  <!-- Slide N: Closing -->
+  <section class="slide closing-slide">
+    <h2>Questions & discussion</h2>
+    <p>Thank you. Follow-up happens in the team channel and on the team page.</p>
+    <div class="links">
+      <a href="{{SLACK_URL}}" target="_blank">Slack — {{TEAM_NAME}}</a>
+      <a href="{{CONFLUENCE_URL}}" target="_blank">Confluence — {{TEAM_NAME}}</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="deck-chrome">
+  <span class="hint">← → / space to navigate · F fullscreen · P print</span>
+  <div class="nav">
+    <button id="btn-prev">← Prev</button>
+    <span class="counter" id="counter">1 / 1</span>
+    <button id="btn-next">Next →</button>
+  </div>
+</div>
+
+<script>
+const BURNDOWN_DATA = {{BURNDOWN_JSON}};
+const SPLIT_DATA = {
+  committedDone: {{COMMITTED_DONE_SP}},
+  addedDone: {{ADDED_DONE_SP}},
+  carryover: {{CARRYOVER_SP}}
+};
+const VELOCITY_HISTORY = {{VELOCITY_HISTORY_JSON}};
+
+class Deck {
+  constructor(){
+    this.slides = Array.from(document.querySelectorAll(".slide"));
+    this.idx = 0;
+    this.counter = document.getElementById("counter");
+    this.charts = {};
+    this.bind();
+    this.show(0);
+    this.renderCharts();
+  }
+  bind(){
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); this.next(); }
+      else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); this.prev(); }
+      else if (e.key === "Home") { e.preventDefault(); this.show(0); }
+      else if (e.key === "End") { e.preventDefault(); this.show(this.slides.length - 1); }
+      else if (e.key === "f" || e.key === "F") { this.toggleFullscreen(); }
+      else if (e.key === "p" || e.key === "P") { window.print(); }
+    });
+    document.getElementById("btn-prev").addEventListener("click", () => this.prev());
+    document.getElementById("btn-next").addEventListener("click", () => this.next());
+  }
+  show(i){
+    if (i < 0 || i >= this.slides.length) return;
+    this.slides[this.idx].classList.remove("active");
+    this.idx = i;
+    this.slides[this.idx].classList.add("active");
+    this.counter.textContent = `${i + 1} / ${this.slides.length}`;
+    window.scrollTo(0,0);
+  }
+  next(){ this.show(Math.min(this.idx + 1, this.slides.length - 1)); }
+  prev(){ this.show(Math.max(this.idx - 1, 0)); }
+  toggleFullscreen(){
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+  renderCharts(){
+    this.renderSplit();
+    this.renderBurndown();
+  }
+  renderSplit(){
+    const el = document.getElementById("split-chart");
+    if (!el) return;
+    const data = SPLIT_DATA;
+    const total = data.committedDone + data.addedDone + data.carryover;
+    if (total === 0) {
+      el.parentElement.innerHTML = '<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#9aa0a6;font-style:italic">No story-point data for this sprint</div>';
+      return;
+    }
+    this.charts.split = new Chart(el.getContext("2d"), {
+      type: "doughnut",
+      data: {
+        labels: ["Committed & Done", "Added & Done", "Carryover"],
+        datasets: [{
+          data: [data.committedDone, data.addedDone, data.carryover],
+          backgroundColor: ["#55A868D0", "#4C72B0D0", "#9aa0a6D0"],
+          borderColor: "#fff",
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "58%",
+        plugins: {
+          legend: { position: "bottom", labels: { usePointStyle: true, padding: 12, font: { size: 12 } } },
+          tooltip: { callbacks: { label: c => `${c.label}: ${c.parsed} SP` } }
+        }
+      }
+    });
+  }
+  renderBurndown(){
+    const el = document.getElementById("burndown-chart");
+    if (!el) return;
+    if (!BURNDOWN_DATA) {
+      // No burndown data — show velocity history bar chart instead
+      this.renderVelocityHistory(el);
+      return;
+    }
+    const days = BURNDOWN_DATA.idealLine.map((_, i) => `Day ${i + 1}`);
+    this.charts.burndown = new Chart(el.getContext("2d"), {
+      type: "line",
+      data: {
+        labels: days,
+        datasets: [
+          { label: "Ideal", data: BURNDOWN_DATA.idealLine, borderColor: "#9aa0a6", borderDash: [4,4], pointRadius: 0, fill: false, tension: 0 },
+          { label: "Actual", data: BURNDOWN_DATA.actualLine, borderColor: "#4C72B0", backgroundColor: "#4C72B033", pointRadius: 3, fill: true, tension: 0.2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: "SP remaining" } },
+          x: { grid: { display: false } }
+        },
+        plugins: { legend: { position: "top", labels: { usePointStyle: true, padding: 12, font: { size: 12 } } } }
+      }
+    });
+  }
+  renderVelocityHistory(el){
+    if (!VELOCITY_HISTORY || !VELOCITY_HISTORY.length) {
+      el.parentElement.innerHTML = '<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#9aa0a6;font-style:italic">No burndown or velocity history available</div>';
+      return;
+    }
+    this.charts.burndown = new Chart(el.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels: VELOCITY_HISTORY.map(s => s.name),
+        datasets: [{
+          label: "Velocity (SP)",
+          data: VELOCITY_HISTORY.map(s => s.sp),
+          backgroundColor: VELOCITY_HISTORY.map(s => s.current ? "#4C72B0CC" : "#9aa0a6CC")
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: "SP completed" } },
+          x: { grid: { display: false } }
+        },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.parsed.y} SP` } } }
+      }
+    });
+  }
+}
+
+new Deck();
+</script>
+</body>
+</html>

@@ -7,6 +7,7 @@ Paulo Alves' personal Claude Code marketplace — Engineering Manager tooling fo
 | Plugin | Description |
 |---|---|
 | [initiative-dashboards](plugins/initiative-dashboards) | Turn a Jira epic key (or a list of them) into self-contained executive HTML dashboards — single-initiative report and portfolio rollup. |
+| [scrum-ceremonies](plugins/scrum-ceremonies) | Build ceremony artifacts from a Jira sprint. Currently ships `building-sprint-review` — a Markdown sprint review report plus a self-contained HTML slide deck for the live meeting. |
 
 ## Installing
 
@@ -15,9 +16,10 @@ In Claude Code:
 ```
 /plugin marketplace add palvesos/pga-marketplace
 /plugin install initiative-dashboards@pga-marketplace
+/plugin install scrum-ceremonies@pga-marketplace
 ```
 
-After install, both skills auto-activate on the trigger phrases below.
+After install, skills auto-activate on the trigger phrases below.
 
 ---
 
@@ -62,6 +64,25 @@ Accepts either a **comma-separated list of Jira keys** or a **single Value Miles
 ### Routing
 
 If you ask for a single-initiative report, only `building-initiative-dashboard` activates. If you mention multiple keys, a VM, "rollup", or "portfolio", only `building-portfolio-dashboard` activates and calls the single-initiative one per item.
+
+### [`building-sprint-review`](plugins/scrum-ceremonies/skills/building-sprint-review) — sprint review package
+
+Use one of these phrasings (always pass an explicit sprint name or ID — the skill doesn't silently default to the active sprint):
+
+- *"build a sprint review for RDUCH Sprint 24"*
+- *"prepare the sprint review deck for sprint 12345"*
+- *"generate the sprint review report for RDUCH Sprint 24"*
+- *"make slides for tomorrow's sprint review of <sprint name>"*
+- *"wrap up sprint <X> with a review presentation and report"*
+
+Produces two files in the current directory:
+
+- `sprint-review-<safe-sprint-name>.md` — Markdown report for Slack / Confluence / email distribution
+- `sprint-review-<safe-sprint-name>.html` — self-contained HTML slide deck for the live meeting (16:9, keyboard-navigable, print-to-PDF)
+
+Both cover: sprint goal vs. outcome, committed vs. completed SP, commitment delivery %, velocity vs. rolling 3-sprint average, completed stories with one demo slide each, scope changes (added / removed mid-sprint), carryover with one-phrase reasons, bugs found, next-sprint preview, and team Slack/Confluence links for follow-up.
+
+Defaults are wired for the Unification Charlie team (RDUCH project, [#unification-charlie](https://outsystems.enterprise.slack.com/archives/C0ABRM13LLS) Slack channel, [team Confluence page](https://outsystemsrd.atlassian.net/wiki/spaces/RDO11PC/pages/5852397579/Unification+Charlie+Team)). For other teams, pass the Confluence page ID explicitly.
 
 ---
 
