@@ -94,12 +94,14 @@
   .closing-slide .links a{padding:12px 24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;color:var(--text-on-dark);font-size:15px}
   .closing-slide .links a:hover{background:rgba(255,255,255,.16);text-decoration:none}
 
-  .deck-chrome{position:fixed;bottom:14px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:12px;color:rgba(255,255,255,.5);pointer-events:none;z-index:10}
-  .deck-chrome .nav{pointer-events:auto;display:flex;gap:8px}
-  .deck-chrome button{padding:6px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:6px;color:rgba(255,255,255,.75);font-size:12px;cursor:pointer}
-  .deck-chrome button:hover{background:rgba(255,255,255,.16);color:#fff}
-  .deck-chrome .counter{font-variant-numeric:tabular-nums;background:rgba(255,255,255,.08);padding:6px 12px;border-radius:6px}
-  .deck-chrome .hint{font-size:11px;letter-spacing:.3px;color:rgba(255,255,255,.4)}
+  /* Chrome floats over slides of any colour — pills carry their own dark background so they always read. */
+  .deck-chrome{position:fixed;bottom:14px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:12px;pointer-events:none;z-index:10}
+  .deck-chrome .nav{pointer-events:auto;display:flex;gap:8px;align-items:center}
+  .deck-chrome button,.deck-chrome .counter,.deck-chrome .hint{background:rgba(15,18,32,.82);color:#ffffff;border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:6px 12px;font-size:12px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+  .deck-chrome button{cursor:pointer;pointer-events:auto}
+  .deck-chrome button:hover{background:rgba(15,18,32,.95);border-color:rgba(255,255,255,.35)}
+  .deck-chrome .counter{font-variant-numeric:tabular-nums}
+  .deck-chrome .hint{font-size:11px;letter-spacing:.3px;color:rgba(255,255,255,.85);pointer-events:none}
 
   @media print{
     html,body{height:auto;overflow:visible;background:#fff}
