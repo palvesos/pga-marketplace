@@ -92,6 +92,12 @@
   .delivered-list .epic-group .epic-header .epic-key{font-family:'SF Mono','Menlo',monospace;font-size:12px;background:#eef0f3;color:#4a525e;padding:2px 8px;border-radius:4px;text-transform:none;letter-spacing:0;font-weight:600}
   .delivered-list .epic-group .epic-header .epic-name{color:var(--text-primary)}
   .delivered-list .epic-group .epic-header .epic-totals{margin-left:auto;font-size:12px;color:var(--text-secondary);text-transform:none;letter-spacing:0;font-weight:500;font-variant-numeric:tabular-nums}
+  .delivered-list .epic-group .epic-progress{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
+  .delivered-list .epic-group .epic-progress .bar-track{flex:1;background:#eef0f3;height:6px;border-radius:3px;overflow:hidden}
+  .delivered-list .epic-group .epic-progress .bar-fill{background:var(--color-done);height:100%;border-radius:3px;transition:width .3s ease}
+  .delivered-list .epic-group .epic-progress .bar-fill.partial{background:var(--color-progress)}
+  .delivered-list .epic-group .epic-progress .bar-fill.low{background:var(--color-warn)}
+  .delivered-list .epic-group .epic-progress .bar-pct{font-size:12px;font-variant-numeric:tabular-nums;color:var(--text-secondary);min-width:42px;text-align:right}
   .delivered-list .epic-group ul{list-style:none;padding-left:0;margin:0}
   .delivered-list .epic-group li{padding:6px 0;border-bottom:none}
 

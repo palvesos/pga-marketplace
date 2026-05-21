@@ -261,7 +261,11 @@ and substitute the same placeholders plus a few deck-specific ones:
   <div class="epic-header">
     <span class="epic-key">RDUCH-188</span>
     <span class="epic-name">LT Connectivity — Cross-tenant DoS (RQ02)</span>
-    <span class="epic-totals">3 items · 7 SP</span>
+    <span class="epic-totals">3 of 5 items · 7 SP</span>
+  </div>
+  <div class="epic-progress">
+    <div class="bar-track"><div class="bar-fill" style="width:60%"></div></div>
+    <span class="bar-pct">60%</span>
   </div>
   <ul>
     <li><span class="item-key">RDUCH-189</span><span class="item-summary">M1 — AuthFailureCooldownService …</span><span class="item-sp">3 SP</span></li>
@@ -282,6 +286,27 @@ and substitute the same placeholders plus a few deck-specific ones:
   `epic-key` = `(no epic)` and no `epic-key` chip rendered.
 - If there is only ONE distinct epic across all Done items, you may
   render a flat list instead of a single trivial group — your call.
+
+**Progress bar per epic** (`<div class="epic-progress">`):
+
+- The bar shows **in-sprint ticket completion** for this epic: numerator =
+  Done items in this epic this sprint; denominator = ALL items in this
+  epic this sprint (Done + in-flight + To Do + Blocked + carryover). So
+  the denominator is bigger than the items listed inside the group —
+  items not Done live in the Carryover section but still count in the
+  total.
+- `epic-totals` chip text: `"<done> of <total> items · <done_sp> SP"`
+  (drop the percentage from the chip — it's on the bar's right-hand label).
+- `bar-fill` class modifier:
+  - default (green, `var(--color-done)`) when `pct >= 67%`
+  - `.partial` (blue, `var(--color-progress)`) when `34% <= pct < 67%`
+  - `.low` (amber, `var(--color-warn)`) when `pct < 34%`
+- `width` on `bar-fill` is the inline percentage (e.g. `style="width:42%"`).
+- `bar-pct` text is the percentage to the nearest integer.
+- **Don't try to fetch the epic's children outside the sprint** — keep
+  the percentage scoped to in-sprint completion. The point of this slide
+  is what the sprint delivered against what the sprint planned for each
+  epic, not lifetime epic completion.
 
 **Demo-slide inner structure** (one section per Done story):
 
