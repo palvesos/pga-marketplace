@@ -779,3 +779,38 @@ share manually.
 | [reference/data-sources.md](reference/data-sources.md) | Sprint custom-field IDs, JQL patterns, sprint blob format, team defaults |
 | [reference/report-template.md](reference/report-template.md) | Markdown report template with placeholders |
 | [reference/presentation-template.html](reference/presentation-template.html) | Self-contained HTML slide deck template |
+
+## Future Improvements
+
+Backlog of enhancements scoped but not yet implemented. Each entry is a
+self-contained slice — pick the ones that fit the time you have for a
+given sprint.
+
+### Bug ratio metrics
+
+Surface the team's quality posture alongside throughput. Add a row to
+the "Numbers at a glance" KPI grid and a column to the Ticket KPIs table:
+
+- **Bug ratio (this sprint)** = `bugs filed in sprint window / total items Done`. Health bands: <0.1 green, 0.1-0.25 amber, >0.25 red.
+- **Bug ratio (rolling 3 sprints)** for trend.
+- **Per-epic bug count** in the Ticket KPIs table so the audience can see which workstreams generate the most defects.
+
+Data: pull `issuetype = Bug AND project = <PROJ> AND created >= sprint.startDate AND created <= sprint.endDate` in Step 1. Optionally cross-reference each Bug's `customfield_<linked-to>` to attribute to the originating epic.
+
+### Incidents metrics
+
+Track production incidents that touched code shipped this sprint or
+previous sprints. Add a small block under the goal-outcome banner:
+
+- **Incidents in sprint window**: count, severity mix, MTTR (created → resolved).
+- **Caused by this sprint's deployments**: incidents linked to a Done ticket from the current sprint (use Jira's `is caused by` link type or a `caused-by-RDUCH-NNN` label convention).
+- **Escape rate**: bugs filed in the next sprint that were tagged to work delivered in this sprint.
+
+Data source depends on the team's incident tooling — Jira project for incidents, PagerDuty integration, or a dedicated `Incident` issuetype in the team's project. Document the source in `reference/data-sources.md` once chosen.
+
+### Other items flagged during dryruns
+
+- **Demo slide pagination** for epics with more than ~7 Done items. Currently a single demo slide can get tight (RDUCH-41 had 9 items + 5 avatars on one slide). Split into N slides of ≤7 items, keep the roster on the first slide only.
+- **Past-sprint Scope Δ** in the Sprint history table on slide 4. Currently `—` for all past sprints because we don't walk their changelogs. Either pull per-sprint changelog (heavy) or drop the column and surface scope-change history only for the current sprint.
+- **Jira avatars instead of Gravatar** for the developer roster. The Atlassian changelog responses already include `avatarUrls.48x48` for every author — higher quality than Gravatar and works for users without a public Gravatar. Build a name → Atlassian-avatar map at data-pull time and feed it into the renderer, keeping Gravatar/initials as a final fallback.
+- **Goal-outcome banner restyle** on slide 2. The solid-colour block reads slightly heavy; a thin left rule + white background would feel more modern while preserving the colour signal.
