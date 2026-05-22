@@ -70,7 +70,7 @@ in the Sprint custom field:
 
 ```bash
 acli jira workitem view <ANY-KEY-FROM-RESULTS> --fields '*all' --json \
-  | jq '.fields.customfield_10010 // .fields.sprint // empty'
+  | jq '.fields.customfield_10006 // .fields.sprint // empty'
 ```
 
 The Sprint field is an array of sprint blobs containing `id`, `name`,
@@ -78,7 +78,7 @@ The Sprint field is an array of sprint blobs containing `id`, `name`,
 `boardId`. Use this to populate the sprint header (name, dates, goal) in
 both artifacts.
 
-If the field ID `customfield_10010` isn't populated for your instance, fall
+If the field ID `customfield_10006` isn't populated for your instance, fall
 back to `.fields.sprint` or grep the raw output for `com.atlassian.greenhopper`.
 See **[reference/data-sources.md](reference/data-sources.md)** for full
 details on the sprint blob format and OutSystems-specific field IDs.
@@ -143,7 +143,7 @@ Build these numbers from the ticket set:
 # Last 3 closed sprints of the same board (or same project, if board unknown)
 acli jira workitem search \
   --jql 'sprint in closedSprints() AND project = RDUCH AND status = Done' \
-  --fields "key,customfield_10004,customfield_10010" \
+  --fields "key,customfield_10004,customfield_10006" \
   --csv --limit 500
 ```
 
@@ -523,7 +523,7 @@ share manually.
 |---|---|
 | Sprint tickets by name | `acli jira workitem search --jql 'sprint = "<NAME>"' --fields "..." --csv --limit 200` |
 | Sprint tickets by ID | `acli jira workitem search --jql 'sprint = <ID>' --fields "..." --csv --limit 200` |
-| Resolve sprint metadata | `acli jira workitem view <KEY> --fields '*all' --json \| jq '.fields.customfield_10010'` |
+| Resolve sprint metadata | `acli jira workitem view <KEY> --fields '*all' --json \| jq '.fields.customfield_10006'` |
 | Find "last closed" sprint | `acli jira workitem search --jql 'sprint in closedSprints() AND project = <PROJ> ORDER BY endDate DESC'` |
 | Get changelog (mid-sprint adds) | `acli jira workitem view <KEY> --fields '*all' --expand changelog --json` |
 | Avg-velocity sample | `acli jira workitem search --jql 'sprint in closedSprints() AND project = <PROJ> AND status = Done'` |

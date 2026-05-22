@@ -10,10 +10,10 @@ Detailed commands, field IDs, and JQL patterns for the
 | Field ID | Meaning |
 |---|---|
 | `customfield_10004` | Story Points |
-| `customfield_10010` | **Sprint** (primary on OutSystems Jira Cloud) |
+| `customfield_10006` | **Sprint** (primary on OutSystems Jira Cloud) |
 | `customfield_12600` | Dev info (PR linkage) |
 
-If `customfield_10010` is missing on your project, also try `.fields.sprint`
+If `customfield_10006` is missing on your project, also try `.fields.sprint`
 or grep for the schema-name `com.atlassian.greenhopper.service.sprint.Sprint`
 in the raw JSON.
 
@@ -66,7 +66,7 @@ sprint in closedSprints() AND project = RDUCH AND status = Done
 ```
 key,summary,status,assignee,issuetype,priority,labels,
 customfield_10004,                  # Story Points
-customfield_10010,                  # Sprint
+customfield_10006,                  # Sprint
 customfield_12600,                  # Dev info / PRs
 resolutiondate,
 created
