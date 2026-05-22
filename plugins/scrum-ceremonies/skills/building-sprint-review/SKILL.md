@@ -385,23 +385,67 @@ appended to the sprint name (CSS handles the chip).
   is what the sprint delivered against what the sprint planned for each
   epic, not lifetime epic completion.
 
-**Demo-slide inner structure** (one section per Done story):
+**Demo-slide inner structure** (one section per **Epic** that has at least
+one Done item in the sprint — *not* one per story):
 
 ```html
-<section class="slide demo-slide">
-  <div class="demo-summary"><span class="demo-key">RDUCH-183</span> Story summary text here</div>
-  <div class="demo-meta">
-    <span>Assignee: <strong>Jane Doe</strong></span>
-    <span>SP: 3</span>
-    <span>Status: Done</span>
-    <span><a href="https://github.com/.../pull/123" target="_blank">PR #123 (merged)</a></span>
+<section class="slide demo-slide epic-demo">
+  <div class="eyebrow">Demo</div>
+  <div class="demo-summary">
+    <span class="demo-key">RDUCH-188</span>
+    LT Connectivity — Cross-tenant DoS (RQ02)
   </div>
-  <div class="demo-notes"></div>
+  <div class="epic-stats">
+    <span>Done: <strong>1 of 4</strong> items (25%)</span>
+    <span>Delivered: <strong>3 SP</strong> of 12</span>
+    <span><a href="https://outsystemsrd.atlassian.net/browse/RDUCH-188" target="_blank">Open epic in Jira</a></span>
+  </div>
+  <ul class="epic-items">
+    <li><span class="item-key">RDUCH-189</span><span class="item-summary">M1 — AuthFailureCooldownService …</span><span class="item-status">Done</span><span class="item-sp">3 SP</span></li>
+    …
+  </ul>
+  <div class="epic-roster">
+    <div class="roster-label">Worked by</div>
+    <div class="roster-row">
+      <figure class="dev-avatar">
+        <div class="avatar-frame" data-color="3">
+          <span class="initials">MG</span>
+          <img src="https://www.gravatar.com/avatar/<md5(email)>?d=404&s=200"
+               alt="Martim Gouveia"
+               onerror="this.style.display='none'"
+               loading="lazy">
+        </div>
+        <figcaption class="dev-name">Martim Gouveia</figcaption>
+      </figure>
+      …
+    </div>
+  </div>
 </section>
 ```
 
-The `demo-notes` div is intentionally empty — the presenter speaks to it
-live. CSS prepends a "Speaker notes" label automatically.
+**Epic demo-slide rules:**
+
+- One slide per **distinct parent Epic** with at least one Done item in the
+  sprint. Sort epics by Done SP desc, then total SP desc, then epic key.
+- `epic-stats` shows: Done count vs total count, Done SP vs total SP, and a
+  Jira link to the epic.
+- `epic-items` lists every Done item in the epic (not all items — just Done),
+  sorted by SP desc then key.
+- `epic-roster` lists every developer who had at least one item assigned in
+  this epic during the sprint (Done **or** in flight — the roster reflects
+  who contributed, not just who closed work). Sort by display-name.
+- Each developer renders as a `<figure class="dev-avatar">` containing an
+  `<img>` (Gravatar by `md5(lowercased-trimmed-email)` with `d=404` so it
+  fails to load when no Gravatar exists) layered over a gradient-coloured
+  initials chip. The `onerror` handler hides the broken `<img>`, leaving the
+  initials chip visible. `data-color="0..6"` picks one of the 7 gradient
+  variants; the index should be deterministic from the name
+  (`sum(ord(c) for c in name) % 7` works).
+- **Avatar source caveat**: Slack profile-image URLs are not exposed by the
+  Slack MCP wrapper. Gravatar is the working fallback for emails registered
+  with Gravatar; otherwise the initials chip is the final rendering. If the
+  user can drop avatar files into the repo, swap the `<img src>` to local
+  paths instead.
 
 The deck has these slides in order — **always render this exact set**, even
 if a section is empty (use a "Nothing to report" line in that slide rather
@@ -412,7 +456,7 @@ than dropping it, so the meeting flow stays predictable):
 3. **Numbers at a glance** — KPI grid: Committed SP, Completed SP, Velocity vs. avg, Bugs, Scope added, Unsized
 4. **Burndown / velocity chart** — Chart.js doughnut for completion split + bar for velocity history
 5. **What we delivered** — `Committed & Done` list, max 10 items per slide; auto-paginate if more
-6. **Demo slides** — one slide per Done story (committed first, then added), with: key, summary, assignee, PR link if present, and an empty "Demo notes" placeholder so the presenter can speak to it
+6. **Demo slides** — one slide per **parent Epic** that has at least one Done item this sprint. Each slide has the epic header, Done items list, and a "Worked by" roster of round developer avatars (Gravatar + initials fallback) for everyone who had an item in the epic this sprint
 7. **Scope changes** — `Added & Done` and `Added & Carryover` and `Removed` combined; collapsed to "No scope changes this sprint" if all three are empty
 8. **Carryover** — `Committed & Carryover` with reasons
 9. **Next sprint preview** — top items if `state=future` sprint exists, else placeholder
