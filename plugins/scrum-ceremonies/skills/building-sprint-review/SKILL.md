@@ -116,11 +116,25 @@ Pull the changelog with:
 acli jira workitem view <KEY> --fields '*all' --expand changelog --json
 ```
 
-In the JSON, `changelog.histories[].items[]` where `field == "Sprint"` shows
-which sprint(s) the ticket moved in/out of, with timestamps. A ticket
-**added mid-sprint** is one whose Sprint field was set to the current
-sprint *after* the sprint's `startDate`. Mark it `added_mid_sprint: true`
-so the report can break out "scope changes".
+Two analyses depend on this changelog:
+
+1. **Mid-sprint scope detection** — `changelog.histories[].items[]` where
+   `field == "Sprint"` shows which sprint(s) the ticket moved in/out of,
+   with timestamps. A ticket **added mid-sprint** is one whose Sprint
+   field was set to the current sprint *after* the sprint's `startDate`.
+   Mark it `added_mid_sprint: true` so the report can break out "scope
+   changes".
+2. **Phase-time metrics** — `histories[].items[]` where `field == "status"`
+   gives the full status-transition timeline. Build an ordered list of
+   `{at: history.created, from: fromString, to: toString}` per Done item.
+   This feeds the Ticket KPIs table on slide 3 (avg days In Progress / In
+   Review / In Testing per epic) — see Step 7. Without changelog the
+   table degrades to an empty-state line.
+
+For 10–20 Done items, pulling the changelog per-item via
+`getJiraIssue --expand changelog` is the only reliable path — the
+search-API does not expose changelog in the slim view. Delegate the
+batch pull to a subagent if you want to keep the main context clean.
 
 ### Step 3 — Compute the metrics
 
@@ -525,6 +539,59 @@ than dropping it, so the meeting flow stays predictable):
 8. **Carryover** — `Committed & Carryover` with reasons
 9. **Next sprint preview** — top items if `state=future` sprint exists, else placeholder
 10. **Q&A / Discussion** — closing slide with Slack channel URL for follow-up
+
+#### 7a. Sub-epic rollup (optional, configurable per team)
+
+Some teams use a two-level epic hierarchy: a "feature" or "milestone"
+ticket parents several smaller epics that each parent the actual stories.
+Example from RDUCH:
+
+- `RDUCH-169` PU-M4.13.1 Private O11 LifeTime-to-ODC Connectivity *(feature)*
+  - `RDUCH-182` [RQ01] Tenant-specific service accounts *(sub-epic)*
+    - `RDUCH-183`, `RDUCH-184`, … *(stories)*
+  - `RDUCH-188` [RQ02] Cross-tenant DoS — auth-failure cooldown *(sub-epic)*
+    - `RDUCH-189`, `RDUCH-190`, … *(stories)*
+
+Each story's `parent.key` points at the sub-epic. Grouping naïvely splits
+the feature into multiple lines across the Delivered list, Demo slides,
+Scope-changes slide, Carryover, Next sprint, and the Ticket KPIs table —
+which dilutes the picture the stakeholders care about.
+
+Fix: configure a rollup map at the top of the renderer and apply it
+in-place to every loaded item before grouping:
+
+```python
+EPIC_ROLLUP = {
+    "RDUCH-182": ("RDUCH-169", "PU-M4.13.1 Private O11 LifeTime-to-ODC Connectivity"),
+    "RDUCH-188": ("RDUCH-169", "PU-M4.13.1 Private O11 LifeTime-to-ODC Connectivity"),
+}
+
+def apply_epic_rollup(item_list):
+    for i in item_list:
+        rolled = EPIC_ROLLUP.get(i.get("parent_key"))
+        if rolled:
+            i["parent_key"], i["parent_summary"] = rolled
+```
+
+**Rules:**
+
+- Apply to **every** item list: current sprint items, future sprint items,
+  closed-sprint history (where epic grouping matters). Do **not** mutate
+  the items' own keys/summaries — only the `parent_key` / `parent_summary`
+  pair.
+- Jira links on each story stay intact; drilling in still lands on the
+  real sub-epic. The rollup is purely presentation.
+- The map is **team-specific configuration**, not data-driven. Ask the
+  user which sub-epics roll up into which parents before the first render
+  for a new team. Add new entries as new feature breakdowns appear.
+- The Ticket KPIs table averages then include all child items under the
+  parent, so the sample size is larger and the metrics are more
+  representative — a feature with 5 items across 2 sub-epics gives a
+  better signal than two single-item averages.
+- If a project uses Jira's native parent-of-epic relationship and you
+  want to auto-discover the map, query the parent of each epic key
+  (`getJiraIssue <EPIC-KEY> --fields parent`). For most teams the static
+  map is simpler and easier to review.
 
 #### 7b. Burndown chart data (optional)
 
