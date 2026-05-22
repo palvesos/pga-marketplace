@@ -262,8 +262,7 @@ and substitute the same placeholders plus a few deck-specific ones:
 | `{{DEMO_SLIDES_HTML}}` | One `<section class="slide demo-slide">` per `Committed & Done` story (then `Added & Done`). See the inline demo-slide markup below. |
 | `{{COMMITTED_DONE_LIST_HTML}}` | **Grouped by parent Epic.** One outer `<li class="epic-group">` per epic, ordered by total SP descending. Each contains an epic header + a nested `<ul>` of the items in that epic. See the "Delivered-list epic grouping" structure below. |
 | `{{SCOPE_CHANGES_HTML}}` | Three small sections: Added & Done, Added & Carryover, Removed. If all three empty: render `<div class="empty-state">No scope changes this sprint.</div>` |
-| `{{CARRYOVER_LIST_HTML}}` | `<li>` rows like the delivered list, plus an `<span class="item-reason">…</span>` with the one-phrase reason. Empty-state line if nothing carried over. |
-| `{{NEXT_SPRINT_HTML}}` | `<li>` rows for the next-sprint preview. Empty-state line if no future sprint. |
+| `{{CARRYOVER_LIST_HTML}}` | **Grouped by parent Epic** (same `<li class="epic-group">` shell as the Delivered slide; no progress bar). Each ticket is a two-row block: row 1 = `<div class="item-main">` with key chip · summary · SP; row 2 = `<div class="item-detail">` with a colour-coded `<span class="item-status" data-status="...">` pill plus an italic `<span class="item-reason">…</span>` one-phrase reason. Empty-state line if nothing carried over. See **Carryover item structure** below. |
 | `{{COMMITTED_DONE_SP}}` / `{{ADDED_DONE_SP}}` | Raw numbers (SP) for the doughnut chart on slide 4 |
 | `{{BURNDOWN_JSON}}` | Optional — see Step 7b. Pass `null` (literal, no quotes) to skip the burndown line chart; the template will fall back to the velocity-history bar instead. |
 | `{{VELOCITY_HISTORY_JSON}}` | Array `[{name, sp, current}]` for prior closed sprints + this one (`current:true` on the most recent). Pass `[]` to hide the fallback too. |
@@ -388,8 +387,72 @@ knows the average is from a partial sample.
 averages**, not of all individual items — this keeps a sprint with one
 huge epic from drowning out the others.
 
-A short footnote below the table explains the PR Cycle proxy. Keep the
-note concise; reviewers know "PR Cycle = open → merge" intuitively.
+A structured legend renders below the table (not a plain footnote
+sentence). Format as a 2-column `<div class="kpis-legend">` grid:
+
+```html
+<div class="kpis-legend">
+  <span class="legend-label">PR Cycle</span>
+  <span>days from first entry into <em>In Code / Peer Review</em> to PR merge timestamp (Jira dev-info)</span>
+  <span class="legend-label">Empty (—)</span>
+  <span>phase not observed (e.g. ticket skipped Testing) or no PR linked</span>
+  <span class="legend-dot fast"></span>
+  <span>&lt; 1 day — fast turnaround</span>
+  <span class="legend-dot slow"></span>
+  <span>&gt; 5 days — likely bottleneck</span>
+</div>
+```
+
+The CSS styles `legend-label` as an uppercase chip, `legend-dot` as a
+small filled circle (green/red), and `em` inside the legend as a small
+monospace pill so reviewers can scan the definition without reading prose.
+
+**Carryover item structure** (the `{{CARRYOVER_LIST_HTML}}` placeholder):
+
+```html
+<ul class="carryover-list">
+  <li class="epic-group">
+    <div class="epic-header">
+      <span class="epic-key">RDUCH-169</span>
+      <span class="epic-name">PU-M4.13.1 Private O11 LifeTime-to-ODC Connectivity</span>
+      <span class="epic-totals">7 items · 21 SP</span>
+    </div>
+    <ul>
+      <li>
+        <div class="item-main">
+          <span class="item-key">RDUCH-185</span>
+          <span class="item-summary">[LT Connectivity][RQ01] M3 — Component tests for flag-aware JWT validation</span>
+          <span class="item-sp">5 SP</span>
+        </div>
+        <div class="item-detail">
+          <span class="item-status" data-status="In Code Review">In Code Review</span>
+          <span class="item-reason">in code review at sprint close</span>
+        </div>
+      </li>
+      …
+    </ul>
+  </li>
+  …
+</ul>
+```
+
+**Rules:**
+
+- Same epic-group shell as the Delivered slide, **without** the progress
+  bar (carryover doesn't have a meaningful "% complete" — the items are
+  by definition not complete). Sort epics by total SP desc; sort items
+  within an epic by SP desc.
+- Row 1 (`item-main`) holds the key chip, summary, and SP — same flex
+  layout as the Delivered list.
+- Row 2 (`item-detail`) is indented under the summary and holds:
+  - **Status pill** with `data-status="<exact status name>"` — CSS
+    colour-codes it: Blocked → red, In Progress / In Code Review / In
+    Peer Review → blue, In Testing → amber, To Do → grey. Add a new
+    rule if your project uses an unusual status name.
+  - **Reason** as italic, secondary-coloured text. One short phrase
+    each (no full sentences). If you don't have a reason yet, render
+    the row with just the status pill — don't fake the reason.
+- Unsized items: render `unsized` instead of `N SP` in row 1.
 
 **KPI bucket payload** (shape of `{{KPI_BUCKETS_JSON}}`):
 
@@ -537,8 +600,12 @@ than dropping it, so the meeting flow stays predictable):
 6. **Demo slides** — one slide per **parent Epic** that has at least one Done item this sprint. Each slide has the epic header, Done items list, and a "Worked by" roster of round developer avatars (Gravatar + initials fallback) for everyone who had an item in the epic this sprint
 7. **Scope changes** — `Added & Done` and `Added & Carryover` and `Removed` combined; collapsed to "No scope changes this sprint" if all three are empty
 8. **Carryover** — `Committed & Carryover` with reasons
-9. **Next sprint preview** — top items if `state=future` sprint exists, else placeholder
-10. **Q&A / Discussion** — closing slide with Slack channel URL for follow-up
+9. **Q&A / Discussion** — closing slide with Slack channel URL for follow-up
+
+The Next-sprint preview is **not** a deck slide. The retro is the natural
+forum for "what's coming up" and live-demo time is better spent on what
+shipped. The MD report still includes a Next-sprint section for async
+readers (stakeholders who don't attend the live review).
 
 #### 7a. Sub-epic rollup (optional, configurable per team)
 

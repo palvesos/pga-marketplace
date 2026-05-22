@@ -121,6 +121,12 @@
   .ticket-kpis td.slow{color:#b0331e}
   .ticket-kpis td.empty{color:#b8bcc6}
   .ticket-kpis .sample-size{font-size:10px;color:var(--text-secondary);margin-left:4px;font-weight:400}
+  .ticket-kpis .kpis-legend{margin-top:14px;display:grid;grid-template-columns:max-content 1fr;column-gap:14px;row-gap:7px;font-size:11.5px;line-height:1.5;color:var(--text-secondary);padding:12px 16px;background:#fafbfc;border-left:3px solid var(--border);border-radius:0 4px 4px 0;align-items:baseline}
+  .ticket-kpis .kpis-legend .legend-label{font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:10px;color:var(--text-primary);white-space:nowrap}
+  .ticket-kpis .kpis-legend .legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;justify-self:start;align-self:center}
+  .ticket-kpis .kpis-legend .legend-dot.fast{background:var(--color-done)}
+  .ticket-kpis .kpis-legend .legend-dot.slow{background:#b0331e}
+  .ticket-kpis .kpis-legend em{font-style:normal;color:var(--text-primary);font-family:'SF Mono','Menlo',monospace;font-size:11px;background:#eef0f3;padding:1px 6px;border-radius:3px}
 
   .demo-slide .demo-key{display:inline-block;background:var(--color-progress);color:#fff;padding:4px 12px;border-radius:6px;font-weight:600;font-size:16px;margin-right:10px;font-family:'SF Mono','Menlo',monospace}
   .demo-slide .demo-summary{font-size:32px;font-weight:600;line-height:1.25;margin-bottom:24px;color:var(--text-primary)}
@@ -152,29 +158,52 @@
   .dev-avatar .avatar-frame[data-color="6"]{background:linear-gradient(135deg,#e85b8e 0%,#a05bf0 100%)}
   .dev-avatar .dev-name{font-size:12px;color:var(--text-primary);text-align:center;line-height:1.3;font-weight:500}
 
-  .delivered-list,.carryover-list,.next-list{font-size:18px;line-height:1.6;list-style:none;padding:0}
-  .delivered-list li,.carryover-list li,.next-list li{padding:10px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:14px;align-items:baseline}
-  .delivered-list li:last-child,.carryover-list li:last-child,.next-list li:last-child{border-bottom:none}
+  .delivered-list,.carryover-list{font-size:18px;line-height:1.6;list-style:none;padding:0}
+  .delivered-list > li:not(.epic-group),
+  .carryover-list > li:not(.epic-group){padding:10px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:14px;align-items:baseline}
+  .delivered-list > li:last-child,.carryover-list > li:last-child{border-bottom:none}
   .item-key{display:inline-block;font-family:'SF Mono','Menlo',monospace;color:var(--color-progress);font-weight:600;min-width:120px;font-size:14px}
   .item-summary{flex:1}
   .item-sp{font-variant-numeric:tabular-nums;color:var(--text-secondary);font-size:14px}
   .item-reason{display:block;font-size:13px;color:#b0331e;font-style:italic;margin-top:2px}
 
-  /* Epic grouping on the "What we shipped" slide */
-  .delivered-list .epic-group{display:block;padding:14px 0 6px;border-bottom:1px solid #eaecf1}
-  .delivered-list .epic-group:last-child{border-bottom:none}
-  .delivered-list .epic-group .epic-header{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--color-progress);font-weight:700}
-  .delivered-list .epic-group .epic-header .epic-key{font-family:'SF Mono','Menlo',monospace;font-size:12px;background:#eef0f3;color:#4a525e;padding:2px 8px;border-radius:4px;text-transform:none;letter-spacing:0;font-weight:600}
-  .delivered-list .epic-group .epic-header .epic-name{color:var(--text-primary)}
-  .delivered-list .epic-group .epic-header .epic-totals{margin-left:auto;font-size:12px;color:var(--text-secondary);text-transform:none;letter-spacing:0;font-weight:500;font-variant-numeric:tabular-nums}
+  /* Epic grouping — shared by Delivered + Carryover slides */
+  .delivered-list .epic-group,
+  .carryover-list .epic-group{display:block;padding:14px 0 6px;border-bottom:1px solid #eaecf1}
+  .delivered-list .epic-group:last-child,
+  .carryover-list .epic-group:last-child{border-bottom:none}
+  .delivered-list .epic-group .epic-header,
+  .carryover-list .epic-group .epic-header{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--color-progress);font-weight:700}
+  .delivered-list .epic-group .epic-header .epic-key,
+  .carryover-list .epic-group .epic-header .epic-key{font-family:'SF Mono','Menlo',monospace;font-size:12px;background:#eef0f3;color:#4a525e;padding:2px 8px;border-radius:4px;text-transform:none;letter-spacing:0;font-weight:600}
+  .delivered-list .epic-group .epic-header .epic-name,
+  .carryover-list .epic-group .epic-header .epic-name{color:var(--text-primary)}
+  .delivered-list .epic-group .epic-header .epic-totals,
+  .carryover-list .epic-group .epic-header .epic-totals{margin-left:auto;font-size:12px;color:var(--text-secondary);text-transform:none;letter-spacing:0;font-weight:500;font-variant-numeric:tabular-nums}
   .delivered-list .epic-group .epic-progress{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
   .delivered-list .epic-group .epic-progress .bar-track{flex:1;background:#eef0f3;height:6px;border-radius:3px;overflow:hidden}
   .delivered-list .epic-group .epic-progress .bar-fill{background:var(--color-done);height:100%;border-radius:3px;transition:width .3s ease}
   .delivered-list .epic-group .epic-progress .bar-fill.partial{background:var(--color-progress)}
   .delivered-list .epic-group .epic-progress .bar-fill.low{background:var(--color-warn)}
   .delivered-list .epic-group .epic-progress .bar-pct{font-size:12px;font-variant-numeric:tabular-nums;color:var(--text-secondary);min-width:42px;text-align:right}
-  .delivered-list .epic-group ul{list-style:none;padding-left:0;margin:0}
+  .delivered-list .epic-group ul,
+  .carryover-list .epic-group ul{list-style:none;padding-left:0;margin:0}
   .delivered-list .epic-group li{padding:6px 0;border-bottom:none}
+
+  /* Carryover items — two-row block with status pill + reason on row 2 */
+  .carryover-list .epic-group li{display:block;padding:10px 0 12px;border-bottom:1px solid #f5f5f5}
+  .carryover-list .epic-group li:last-child{border-bottom:none}
+  .carryover-list .epic-group li .item-main{display:flex;gap:14px;align-items:baseline}
+  .carryover-list .epic-group li .item-main .item-summary{flex:1;font-size:15px;line-height:1.4}
+  .carryover-list .epic-group li .item-detail{display:flex;gap:10px;align-items:baseline;margin:6px 0 0 134px;font-size:13px}
+  .carryover-list .epic-group li .item-status{padding:3px 10px;border-radius:10px;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;background:#eef0f3;color:#4a525e;white-space:nowrap}
+  .carryover-list .epic-group li .item-status[data-status="Blocked"]{background:#fde7e2;color:#b0331e}
+  .carryover-list .epic-group li .item-status[data-status="In Progress"]{background:#e2eaf7;color:#3c5b8c}
+  .carryover-list .epic-group li .item-status[data-status="In Code Review"],
+  .carryover-list .epic-group li .item-status[data-status="In Peer Review"]{background:#e2eaf7;color:#3c5b8c}
+  .carryover-list .epic-group li .item-status[data-status="In Testing"]{background:#fdf2e0;color:#8b5a16}
+  .carryover-list .epic-group li .item-status[data-status="To Do"]{background:#eef0f3;color:#4a525e}
+  .carryover-list .epic-group li .item-detail .item-reason{display:inline;color:var(--text-secondary);font-style:italic;font-size:13px;margin:0}
 
   .empty-state{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-style:italic;font-size:20px}
 
@@ -284,18 +313,11 @@
     {{SCOPE_CHANGES_HTML}}
   </section>
 
-  <!-- Slide N-2: Carryover -->
+  <!-- Slide N-1: Carryover -->
   <section class="slide">
     <div class="eyebrow">Carryover</div>
     <h2>Rolling to next sprint</h2>
     <ul class="carryover-list">{{CARRYOVER_LIST_HTML}}</ul>
-  </section>
-
-  <!-- Slide N-1: Next sprint preview -->
-  <section class="slide">
-    <div class="eyebrow">Next sprint</div>
-    <h2>What's coming up</h2>
-    <ul class="next-list">{{NEXT_SPRINT_HTML}}</ul>
   </section>
 
   <!-- Slide N: Closing -->
