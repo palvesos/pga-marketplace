@@ -255,6 +255,7 @@ and substitute the same placeholders plus a few deck-specific ones:
 | `{{VELOCITY_HISTORY_JSON}}` | Array `[{name, sp, current}]` for prior closed sprints + this one (`current:true` on the most recent). Pass `[]` to hide the fallback too. |
 | `{{KPI_BUCKETS_JSON}}` | Object keyed by bucket name; powers the click-to-drill table on the "By the numbers" slide. See **KPI bucket payload** below. Pass `{}` and the cards will render empty drilldowns. |
 | `{{SPRINT_HISTORY_HTML}}` | A `<table>` rendered on the Trends slide below the charts. Columns: Sprint · Capacity · Velocity · Overflow · Scope Δ · Delivery%. One row per sprint, newest first, current sprint marked with `class="current"`. See **Sprint history table** below. |
+| `{{TICKET_KPIS_HTML}}` | A `<table>` rendered on the "By the numbers" slide below the KPI grid. One row per epic that has at least one Done item this sprint, plus a final sprint-average row (`class="epic-total"`). Columns: Epic · Done · In Progress · In Review · In Testing · PR Cycle · Lead Time. All time columns are average **days** across Done items in that epic. See **Ticket KPIs table** below. |
 
 **Sprint history table** (the `{{SPRINT_HISTORY_HTML}}` placeholder):
 
@@ -312,6 +313,69 @@ can't be, drop the row entirely rather than half-fill it.
 happened most recently"). Current sprint gets `class="current"` on its
 `<tr>` and renders with a highlighted background + a small "current" chip
 appended to the sprint name (CSS handles the chip).
+
+**Ticket KPIs table** (the `{{TICKET_KPIS_HTML}}` placeholder):
+
+```html
+<table>
+  <thead><tr>
+    <th>Epic</th>
+    <th>Done</th>
+    <th>In Progress</th>
+    <th>In Review</th>
+    <th>In Testing</th>
+    <th>PR Cycle</th>
+    <th>Lead Time</th>
+  </tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="epic-key-cell">RDUCH-41</span><span class="epic-name-cell">M2.1.8 ODC read-writing O11 data multi O11 infrastructures</span></td>
+      <td>9</td>
+      <td>3.2d</td><td>1.8d</td><td class="empty">—</td><td>1.6d</td><td>5.1d</td>
+    </tr>
+    …
+    <tr class="epic-total">
+      <td>…<span class="epic-name-cell">Sprint average (across epics)</span></td>
+      <td>16</td>
+      <td>…</td><td>…</td><td>…</td><td>…</td><td>…</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+**Per-metric definitions** (computed from each Done item's status-field
+changelog; aggregate as a simple mean per epic, skipping items where the
+metric is unavailable):
+
+| Column | Definition |
+|---|---|
+| Epic | `parent.key` + `parent.fields.summary` (strip leading `[Tags]` for the name cell). |
+| Done | Count of Done items in this epic this sprint. |
+| In Progress | Avg days the ticket spent in status `In Progress`. From changelog: sum of (next-transition.created − In-Progress-entry.created) for each `In Progress` segment. |
+| In Review | Avg days in `In Code Review` **or** `In Peer Review` (treat as the same phase — projects may use either label). |
+| In Testing | Avg days in `In Testing`. `—` if the ticket skipped Testing. |
+| PR Cycle | Days from first entry into a Review state to PR merge timestamp (read from `customfield_12600.cachedValue.summary.pullrequest.overall.lastUpdated` when `state == "MERGED"`). `—` when no PR is linked. |
+| Lead Time | `resolutiondate − created` in days. |
+
+**Colour bands** on every time cell:
+
+- `class="fast"` (green) when value `< 1d` — fast turnaround.
+- `class="slow"` (red) when value `> 5d` — likely a bottleneck.
+- No class otherwise (default text colour).
+- `class="empty"` for `—` cells (phase not observed for any item).
+
+**Sample-size badge**: when fewer Done items have changelog data than the
+`Done` count (e.g. the script skipped a few items), append a small
+`<span class="sample-size">(n=N)</span>` to the Epic cell so the audience
+knows the average is from a partial sample.
+
+**Final row** is the sprint average across all epics, on a row with
+`class="epic-total"` (highlighted background). Average **of epic
+averages**, not of all individual items — this keeps a sprint with one
+huge epic from drowning out the others.
+
+A short footnote below the table explains the PR Cycle proxy. Keep the
+note concise; reviewers know "PR Cycle = open → merge" intuitively.
 
 **KPI bucket payload** (shape of `{{KPI_BUCKETS_JSON}}`):
 
