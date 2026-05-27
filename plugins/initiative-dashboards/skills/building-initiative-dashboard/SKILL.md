@@ -146,6 +146,13 @@ executive narrative.
 
 ### Step 1 — Gather the initiative tree from Jira
 
+**Fetch mode — choose before issuing any JQL.**
+
+| Condition                                                          | Mode             |
+|--------------------------------------------------------------------|------------------|
+| Prior snapshot from Step 0.3 exists, is ≤ 30 days old, **and** the user didn't say *"fresh fetch"* / *"full refresh"* | **Incremental** — see Step 1.5 |
+| All other cases (first snapshot, prior > 30 days old, or explicit fresh request) | **Full walk** — see below      |
+
 Walk the Jira hierarchy starting from the user-provided key.
 
 ```bash
@@ -154,19 +161,21 @@ acli jira workitem view <KEY> --fields '*all' --json
 
 # Direct children
 acli jira workitem search --jql "\"Epic Link\" = <KEY> OR parent = <KEY>" \
-  --fields "key,summary,status,assignee,issuetype" --csv
+  --fields "key,summary,status,assignee,issuetype,updated" --csv
 
 # Linked epics (for cross-team or sibling work)
 acli jira workitem search --jql "issue in linkedIssues(<KEY>)" \
-  --fields "key,summary,status,assignee,issuetype" --csv
+  --fields "key,summary,status,assignee,issuetype,updated" --csv
 
 # For each linked epic, fetch its children too
 acli jira workitem search --jql "\"Epic Link\" = <LINKED_EPIC> OR parent = <LINKED_EPIC>" \
-  --fields "key,summary,status,assignee,issuetype" --csv
+  --fields "key,summary,status,assignee,issuetype,updated" --csv
 ```
 
 For each ticket, extract:
-- `key`, `summary`, `status.name`, `assignee.emailAddress`, `issuetype.name`
+- `key`, `summary`, `status.name`, `assignee.emailAddress`, `issuetype.name`,
+  `updated` (ISO-8601 timestamp — needed for incremental fetches on the
+  next run)
 - **Story Points** from `customfield_10004`
 - **Parent / Epic Link** from `customfield_10007`
 - **PR linkage** from `customfield_12600` (regex: `state=([A-Z]+)`, `stateCount=(\d+)`)
@@ -174,7 +183,77 @@ For each ticket, extract:
 See **[reference/data-sources.md](reference/data-sources.md)** for the full
 list of useful custom field IDs and commands.
 
+### Step 1.5 — Incremental fetch (when a recent prior snapshot exists)
+
+When the fetch-mode decision in Step 1 chose **incremental**, replace the
+full walk with the three queries below and merge the results against the
+items reconstructed from the prior `.md` frontmatter.
+
+Let `PRIOR_ISO` = `previous_snapshot.snapshot_iso` (from Step 0.3).
+
+```bash
+# 1. Changed items — anything updated since the prior snapshot
+acli jira workitem search \
+  --jql "(\"Epic Link\" = <KEY> OR parent = <KEY>) AND updated >= \"$PRIOR_ISO\"" \
+  --fields "key,summary,status,assignee,issuetype,updated" --csv
+
+# 2. Newly created items — caught even if untouched after creation
+acli jira workitem search \
+  --jql "(\"Epic Link\" = <KEY> OR parent = <KEY>) AND created >= \"$PRIOR_ISO\"" \
+  --fields "key,summary,status,assignee,issuetype,updated" --csv
+
+# 3. Reconciliation — full set of keys in scope, no other fields
+acli jira workitem search \
+  --jql "\"Epic Link\" = <KEY> OR parent = <KEY>" \
+  --fields "key" --csv
+```
+
+Also run query 1 + 2 against each linked epic from the prior snapshot
+(linked-epic membership rarely changes; if you suspect it has, fall back
+to a full walk for safety).
+
+**Merge algorithm:**
+
+1. Start with the `items` list reconstructed from the prior `.md`
+   frontmatter — same shape as the Step 4 data model.
+2. **Apply query 1** — for each row, overwrite the matching item by `key`
+   (or insert if not previously seen).
+3. **Apply query 2** — insert any item whose `key` isn't already in the
+   working set. Treat these as "new since last snapshot" for the
+   delta narrative.
+4. **Apply query 3** — drop any item from the working set whose `key`
+   doesn't appear in this list (it was removed from scope or closed
+   out-of-tree).
+5. **Fetch the main epic itself** if its `key` appeared in query 1 (its
+   status / parent VM may have moved); otherwise reuse the prior epic
+   metadata.
+
+For each item that appeared in query 1 (status or other fields
+changed), flag it for a **PR re-fetch** in Step 2. Items that didn't
+appear keep their `pr_url`, `pr_state`, `pr_repo` verbatim from the
+prior `.md`.
+
+**Edge cases — fall back to a full walk if any of these apply:**
+- Prior snapshot's `items` list is missing or malformed.
+- The prior snapshot is < 7 days old but query 1 returns > 80% of the
+  prior item count (rare — usually means a custom-field change bumped
+  `updated` on everything; cheaper to do the full walk).
+- The user explicitly asked for a *"full refresh"* / *"fresh fetch"*
+  in Step 0.0.
+
+Record the chosen mode in the new state file's frontmatter as
+`fetch_mode: incremental` or `fetch_mode: full` so the next run can
+audit.
+
 ### Step 2 — Resolve linked PRs from GitHub
+
+**Incremental mode (from Step 1.5):** only re-query PRs for tickets
+flagged as changed in query 1. For every other ticket in the working
+set, keep `pr_url`, `pr_state`, `pr_repo` verbatim from the prior `.md`
+— do not call `gh` for them.
+
+**Full-walk mode:** run the queries below for every ticket whose
+dev-info field reports a PR.
 
 For tickets where the dev-info field shows a PR exists. `gh search prs`
 only accepts `--state open` or `--state closed` (no `all`). For each
@@ -425,6 +504,7 @@ snapshot_iso: 2026-05-27T14:32:11Z
 snapshot_date: 2026-05-27
 html_file: rduch_169__2026_05_27_14_32_11.html
 previous_snapshot: rduch_169__2026_05_13_09_05_44.md   # or null on first run
+fetch_mode: incremental                                # incremental | full
 rag:
   status: yellow                                       # green | yellow | red
   label: At Risk
@@ -445,9 +525,30 @@ counts_by_status:
 tracks:
   RQ01: { rag: green,  sp_done: 12, sp_in_flight: 3, sp_todo: 0 }
   RQ02: { rag: yellow, sp_done: 4,  sp_in_flight: 4, sp_todo: 2 }
+linked_epics: [RDUCO-77, RDUCV-12]                     # for incremental fetch reuse on next run
 items:
-  - { key: RDUCH-183, status: In Progress, sp: 2, track: RQ01, assignee: user@x, pr_state: OPEN }
-  - { key: RDUCH-184, status: Done,        sp: 3, track: RQ01, assignee: user@y, pr_state: MERGED }
+  - key: RDUCH-183
+    type: Story
+    summary: "[RQ01] M1 — Validator service"
+    status: In Progress
+    sp: 2
+    track: RQ01
+    assignee: user@x
+    updated: 2026-05-27T11:14:02Z
+    pr_url: https://github.com/org/repo/pull/472
+    pr_state: OPEN
+    pr_repo: org/repo#472
+  - key: RDUCH-184
+    type: Story
+    summary: "[RQ01] M2 — Wiring"
+    status: Done
+    sp: 3
+    track: RQ01
+    assignee: user@y
+    updated: 2026-05-26T08:02:11Z
+    pr_url: https://github.com/org/repo/pull/473
+    pr_state: MERGED
+    pr_repo: org/repo#473
 sources_queried: [Jira, GitHub, Productboard]
 ---
 
@@ -485,7 +586,16 @@ sources_queried: [Jira, GitHub, Productboard]
 - Keep the narrative sections in sync with the HTML (same bullets, plain
   text). The frontmatter is the canonical machine-readable state.
 - The `items` list must include every item that appears in the dashboard
-  table — this is what enables status-change detection on the next run.
+  table — this is what enables status-change detection AND incremental
+  fetching on the next run.
+- Each item must include `key`, `type`, `summary`, `status`, `sp`,
+  `track`, `assignee`, `updated`, and (if a PR exists) `pr_url`,
+  `pr_state`, `pr_repo`. Omitting any of these forces the next run to
+  fall back to a full walk.
+- Record `linked_epics` so the next run's incremental fetch can re-use
+  the same linked-epic set without re-discovering it.
+- Record `fetch_mode` (`incremental` | `full`) so subsequent runs can
+  audit how each prior snapshot was produced.
 - Do not write secrets or PII beyond what's already in the HTML.
 
 ## Best Practices
@@ -535,6 +645,9 @@ This is for executives.
 |---|---|
 | Get epic + fields | `acli jira workitem view <KEY> --fields '*all' --json` |
 | Get children | `acli jira workitem search --jql "\"Epic Link\" = <KEY> OR parent = <KEY>"` |
+| Incremental: changed since prior | `acli jira workitem search --jql "(\"Epic Link\" = <KEY> OR parent = <KEY>) AND updated >= \"<PRIOR_ISO>\""` |
+| Incremental: added since prior | `acli jira workitem search --jql "(\"Epic Link\" = <KEY> OR parent = <KEY>) AND created >= \"<PRIOR_ISO>\""` |
+| Incremental: key-only reconcile | `acli jira workitem search --jql "\"Epic Link\" = <KEY> OR parent = <KEY>" --fields "key"` |
 | Get linked epics | `acli jira workitem search --jql "issue in linkedIssues(<KEY>)"` |
 | Find open PRs for ticket | `gh search prs "<KEY>"` (default = open) |
 | Find merged/closed PRs | `gh search prs "<KEY>" --state closed` |
