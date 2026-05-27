@@ -9,7 +9,7 @@ description: >-
   the user asks to "build a dashboard for initiative X", "create a progress
   dashboard for epic Y", "make a status dashboard for RDUCH-169", "executive
   report for PU-M4.13.1", or "visualise progress on an initiative".
-allowed-tools: Bash(acli jira:*),Bash(gh search:*),Bash(gh pr:*),Bash(npx:*),Bash(open:*),Bash(mkdir:*),Bash(ls:*)
+allowed-tools: Bash(acli jira:*),Bash(gh search:*),Bash(gh pr:*),Bash(npx:*),Bash(open:*),Bash(mkdir:*),Bash(ls:*),Bash(date:*)
 ---
 
 # Building an Initiative Dashboard
@@ -37,6 +37,87 @@ allowed-tools: Bash(acli jira:*),Bash(gh search:*),Bash(gh pr:*),Bash(npx:*),Bas
 5. A starting **Jira epic or initiative key** (e.g. `RDUCH-169`, `RPOR-28605`)
 
 ## Workflow
+
+### Step 0 — Prepare the initiative folder and read prior snapshot
+
+Each initiative gets its own folder on disk so successive runs accumulate a
+time series of snapshots that can be compared.
+
+**Output path override.** If the caller (a user or another skill, e.g.
+`building-portfolio-dashboard`) passed an explicit output directory or
+filename for the HTML, honour it and **skip the state-folder behaviour
+entirely** (no `.md` snapshot, no delta line). The state-folder flow only
+applies to standalone runs where the user said something like *"build a
+dashboard for RDUCH-169"* without specifying a path.
+
+**Base directory** (in order of precedence):
+1. `$INITIATIVE_DASHBOARDS_DIR` environment variable, if set
+2. `~/initiative-dashboards/` (default)
+
+**Initiative slug** — derived from the Jira key, snake-cased and lowercased.
+Examples: `RDUCH-169` → `rduch_169`, `PU-M4.13.1` → `pu_m4_13_1`. Replace
+any character that isn't `[a-z0-9]` with `_`, then collapse consecutive `_`.
+
+**Timestamp** — generated via `date +"%Y_%m_%d_%H_%M_%S"` (UTC or local —
+local is fine, sortable lexicographically).
+
+**Filenames** — both artifacts share the same stem:
+- HTML: `<slug>__<timestamp>.html`
+- State: `<slug>__<timestamp>.md`
+
+```bash
+BASE_DIR="${INITIATIVE_DASHBOARDS_DIR:-$HOME/initiative-dashboards}"
+SLUG="rduch_169"                              # derived from <KEY>
+TS="$(date +"%Y_%m_%d_%H_%M_%S")"
+FOLDER="$BASE_DIR/$SLUG"
+mkdir -p "$FOLDER"
+
+# List prior state snapshots, newest first
+ls -1t "$FOLDER"/*.md 2>/dev/null
+```
+
+#### Step 0.1 — Pick the comparison target
+
+The user controls which prior snapshot the new one is compared against.
+There are exactly two supported options:
+
+| User phrasing                          | Resolution rule                                                |
+|----------------------------------------|----------------------------------------------------------------|
+| *"since last report"* (default)        | Most recent `.md` file (top of `ls -1t`)                       |
+| *"since last <N> weeks"*               | Snapshot with the **latest timestamp on-or-before `N*7` days ago** |
+
+**Default** when the user doesn't specify a window: *"since last report"*
+(most recent prior `.md` file).
+
+**Resolution algorithm** for the "last N weeks" case — the snapshot
+filename contains `__YYYY_MM_DD_HH_MM_SS`. Parse that timestamp from
+each `.md` in the folder and pick the one with the largest timestamp
+≤ `today − N*7 days`.
+
+**If the requested window pre-dates every stored snapshot** (i.e. the
+oldest `.md` is *newer* than `today − N*7 days`):
+
+1. Default to the **oldest available snapshot**.
+2. **Ask the user to confirm before generating** — surface the gap with
+   a single yes/no question (use the `AskUserQuestion` tool), e.g.
+   *"You asked for the last 6 weeks, but the oldest snapshot is from
+   3 weeks ago (2026-05-06). Compare against that instead?"*
+3. If the user declines, treat the run as a first snapshot (no delta).
+
+If there are **no prior snapshots at all**, skip Step 0.2 and the delta
+narrative — this is a first snapshot.
+
+#### Step 0.2 — Load the chosen prior snapshot
+
+Once a target file is selected, **read it via the Read tool** and keep
+its frontmatter values in working memory. These inform:
+- the delta line in the executive narrative (Step 5)
+- the `previous_snapshot` field and `## Delta vs. previous snapshot`
+  section in the new state file (Step 7)
+
+If no prior snapshot exists, or the user declined the fallback in Step
+0.1, proceed without delta context and note "First snapshot" in the
+executive narrative.
 
 ### Step 1 — Gather the initiative tree from Jira
 
@@ -246,6 +327,11 @@ Strategic, outcome-oriented, calm. The reader is not in the day-to-day.
 Bulleted executive prose for Engineering Directors and PMs. 6-10 bullets:
 - Headline RAG with a one-line summary
 - Quantified scope progress (% delivered / in flight / remaining of sized SP)
+- **Delta vs. prior snapshot** (from Step 0.2) — one bullet that names
+  the comparison target so the reader knows the window, e.g.
+  *"Since last report (2026-05-13): +12 SP delivered, RQ02 moved
+  Yellow→Green, 2 new stories added to RQ03."* Omit if this is the first
+  snapshot.
 - Per-track RAG (Green/Yellow/Red with one-line justification each)
 - Cross-team execution health
 - Open risks for leadership attention (as a nested bullet group)
@@ -285,9 +371,97 @@ or owner — no vague guidance.
 - No Status filter, no Assignee filter (both removed; that detail is
   visible in the item table and the doughnut chart).
 
-3. Write to `<INITIATIVE_FOLDER_OR_CWD>/dashboard.html`
-4. Open it: `open <path>` (macOS)
-5. Tell the user the path and what the dashboard contains
+3. Write the HTML to `$FOLDER/<slug>__<timestamp>.html` (path from Step 0)
+4. Write the state snapshot to `$FOLDER/<slug>__<timestamp>.md` — see
+   **Step 7** for the schema
+5. Open it: `open $FOLDER/<slug>__<timestamp>.html` (macOS)
+6. Tell the user:
+   - the absolute paths to both files
+   - the comparison target used — either the resolved prior snapshot
+     (e.g. *"compared against rduch_169__2026_05_13_09_05_44.md
+     (14 days ago, matched your 'last 2 weeks' request)"*) or
+     *"first snapshot"* if none was available
+   - what the dashboard contains
+
+### Step 7 — Write the state snapshot (`.md`)
+
+Write a markdown file alongside the HTML using YAML frontmatter for
+machine-readable values and a brief narrative body. This file is what
+future runs read to compute deltas, and what the user can grep / open
+directly.
+
+**Schema:**
+
+```markdown
+---
+initiative_key: RDUCH-169
+initiative_title: PU-M4.13.1 — Private O11 LifeTime-to-ODC Connectivity
+snapshot_iso: 2026-05-27T14:32:11Z
+snapshot_date: 2026-05-27
+html_file: rduch_169__2026_05_27_14_32_11.html
+previous_snapshot: rduch_169__2026_05_13_09_05_44.md   # or null on first run
+rag:
+  status: yellow                                       # green | yellow | red
+  label: At Risk
+  headline: One-sentence justification.
+scope:
+  sp_total_sized: 145
+  sp_done: 67
+  sp_in_flight: 32
+  sp_todo_sized: 31
+  items_unsized: 8
+  items_total: 41
+  open_prs: 12
+counts_by_status:
+  Done: 18
+  In Progress: 7
+  Pending Review: 4
+  To Do: 12
+tracks:
+  RQ01: { rag: green,  sp_done: 12, sp_in_flight: 3, sp_todo: 0 }
+  RQ02: { rag: yellow, sp_done: 4,  sp_in_flight: 4, sp_todo: 2 }
+items:
+  - { key: RDUCH-183, status: In Progress, sp: 2, track: RQ01, assignee: user@x, pr_state: OPEN }
+  - { key: RDUCH-184, status: Done,        sp: 3, track: RQ01, assignee: user@y, pr_state: MERGED }
+sources_queried: [Jira, GitHub, Productboard]
+---
+
+# RDUCH-169 — Snapshot 2026-05-27
+
+## Executive Status
+- <bullet 1>
+- <bullet 2>
+- Open question: <…>
+
+## Highlights
+- <…>
+
+## Lowlights
+- <…>
+
+## Progress Summary
+- <…>
+
+## Recommended Actions
+- <…>
+
+## Delta vs. previous snapshot (2026-05-13)
+- SP delivered: +12 (55 → 67)
+- New items: RDUCH-201, RDUCH-202
+- Status changes:
+  - RDUCH-183: To Do → In Progress
+  - RDUCH-184: In Progress → Done
+- RAG change: Yellow → Yellow (steady)
+
+<!-- omit the "Delta" section entirely if previous_snapshot is null -->
+```
+
+**Rules:**
+- Keep the narrative sections in sync with the HTML (same bullets, plain
+  text). The frontmatter is the canonical machine-readable state.
+- The `items` list must include every item that appears in the dashboard
+  table — this is what enables status-change detection on the next run.
+- Do not write secrets or PII beyond what's already in the HTML.
 
 ## Best Practices
 
@@ -306,6 +480,11 @@ or owner — no vague guidance.
 
 5. **Never invent data** — if PB or Confluence wasn't queryable, omit the
    section rather than fabricating it.
+
+6. **Snapshots are append-only** — never overwrite or delete prior `.md`
+   or `.html` files in `$FOLDER`. Each run adds a new timestamped pair so
+   the user can scroll back through history. The filename pattern makes
+   collisions impossible at second-level resolution.
 
 ## Common Mistakes
 
@@ -338,6 +517,9 @@ This is for executives.
 | Read sheet headers | `npx -y github:OutSystems/prodeng-drive-cli sheets read <ID> '1:1'` |
 | List PB feedback | `npx -y github:OutSystems/prodeng-productboard list_feedback --args '{"featureId":"<UUID>"}'` |
 | Open dashboard | `open <path-to-dashboard.html>` |
+| Compute timestamp | `date +"%Y_%m_%d_%H_%M_%S"` |
+| Create initiative folder | `mkdir -p "${INITIATIVE_DASHBOARDS_DIR:-$HOME/initiative-dashboards}/<slug>"` |
+| List prior snapshots | `ls -1t <folder>/*.md \| head -5` |
 
 ## Reference Files
 
