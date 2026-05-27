@@ -1,0 +1,23 @@
+{
+  "_description": "Simulated Jira current state on 2026-05-27, 2 weeks after the prior snapshot. Each item carries a synthetic `updated` field so the incremental JQL filter (updated >= prior.snapshot_iso) is deterministic. Use this in conjunction with fixtures/prior_snapshot.md.",
+  "prior_iso": "2026-05-13T09:05:44Z",
+  "initiative": {
+    "key": "FAKE-100",
+    "title": "Multi-tenant Connectivity Hardening",
+    "parent_vm": "VM-9",
+    "productboard_id": null
+  },
+  "items": [
+    {"key": "FAKE-100", "type": "Epic",            "summary": "Multi-tenant Connectivity Hardening",     "status": "In Progress",    "sp": null, "track": "Charlie", "assignee": "-",     "updated": "2026-05-20T10:00:00Z", "pr_url": null,                                 "pr_state": null,    "pr_repo": null},
+    {"key": "FAKE-101", "type": "Discovery",       "summary": "Solution discovery and WBS definition",  "status": "Done",           "sp": 2,    "track": "Charlie", "assignee": "alice", "updated": "2026-04-20T09:00:00Z", "pr_url": null,                                 "pr_state": null,    "pr_repo": null},
+    {"key": "FAKE-102", "type": "Solution Design", "summary": "[RQ01] LLD",                              "status": "Done",           "sp": 2,    "track": "RQ01",    "assignee": "alice", "updated": "2026-05-02T10:00:00Z", "pr_url": null,                                 "pr_state": null,    "pr_repo": null},
+    {"key": "FAKE-103", "type": "Solution Design", "summary": "[RQ02] LLD",                              "status": "Done",           "sp": 2,    "track": "RQ02",    "assignee": "alice", "updated": "2026-05-02T11:00:00Z", "pr_url": null,                                 "pr_state": null,    "pr_repo": null},
+    {"key": "FAKE-104", "type": "Story",           "summary": "[RQ01] M1 — Validator service",           "status": "Done",           "sp": 2,    "track": "RQ01",    "assignee": "bob",   "updated": "2026-05-21T15:00:00Z", "pr_url": "https://github.com/org/repo/pull/1", "pr_state": "MERGED","pr_repo": "org/repo#1"},
+    {"key": "FAKE-105", "type": "Story",           "summary": "[RQ01] M2 — Wiring",                      "status": "In Progress",    "sp": 3,    "track": "RQ01",    "assignee": "bob",   "updated": "2026-05-22T11:00:00Z", "pr_url": "https://github.com/org/repo/pull/2", "pr_state": "OPEN",  "pr_repo": "org/repo#2"},
+    {"key": "FAKE-106", "type": "Story",           "summary": "[RQ01] M3 — Tests",                       "status": "To Do",          "sp": 5,    "track": "RQ01",    "assignee": "bob",   "updated": "2026-04-25T14:30:00Z", "pr_url": null,                                 "pr_state": null,    "pr_repo": null},
+    {"key": "FAKE-107", "type": "Story",           "summary": "[RQ02] M1 — Cooldown service",            "status": "In Peer Review", "sp": 3,    "track": "RQ02",    "assignee": "carol", "updated": "2026-05-24T13:00:00Z", "pr_url": "https://github.com/org/repo/pull/3", "pr_state": "OPEN",  "pr_repo": "org/repo#3"},
+    {"key": "FAKE-108", "type": "Story",           "summary": "[RQ02] M2 — Wire cooldown",               "status": "To Do",          "sp": 2,    "track": "RQ02",    "assignee": "carol", "updated": "2026-04-30T16:00:00Z", "pr_url": null,                                 "pr_state": null,    "pr_repo": null},
+    {"key": "FAKE-109", "type": "Story",           "summary": "Threat Model",                            "status": "Done",           "sp": 2,    "track": "Charlie", "assignee": "dave",  "updated": "2026-05-20T09:00:00Z", "pr_url": null,                                 "pr_state": null,    "pr_repo": null},
+    {"key": "FAKE-110", "type": "Story",           "summary": "[RQ03] M1 — Telemetry",                   "status": "To Do",          "sp": 3,    "track": "RQ03",    "assignee": "erin",  "updated": "2026-05-25T10:00:00Z", "pr_url": null,                                 "pr_state": null,    "pr_repo": null}
+  ]
+}

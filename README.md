@@ -80,6 +80,39 @@ If you ask for a single-initiative report, only `building-initiative-dashboard` 
 
 ---
 
+## Testing
+
+The repo ships two layers of tests for the dashboard skills:
+
+### Skill activation + effectiveness (YAML)
+
+Under `tests/skills/<skill-name>/`:
+
+- `activation.yml` — checks that the right skill activates for given user phrasings.
+- `effectiveness.yml` — runs the skill against fixture data in `tests/fixtures/dashboards/` and validates the rendered output.
+
+These are consumed by Anthropic's skill-evaluation harness.
+
+### Incremental-fetch unit tests (Python)
+
+The `building-initiative-dashboard` skill ships with an incremental Jira fetch path (SKILL.md Step 1.5) that diffs against a prior snapshot to cut API calls. Three standalone scripts validate the merge algorithm without touching real Jira or GitHub:
+
+```bash
+cd tests/skills/building-initiative-dashboard/incremental-merge
+python3 test_merge.py     # merge result must equal a full walk
+python3 test_removal.py   # items removed from scope are dropped
+python3 test_savings.py   # API-call reduction on a 50-item synthetic case
+```
+
+Each script exits non-zero on failure. Inputs live under the same directory's `fixtures/`:
+
+- `fixtures/prior_snapshot.md` — a state snapshot in the schema documented in SKILL.md Step 7.
+- `fixtures/current_state.json` — a simulated Jira current state with synthetic `updated` timestamps that drive the JQL filters.
+
+No external dependencies — pure Python 3 standard library. Re-run after any change to Step 1.5's merge logic or the Step 7 schema.
+
+---
+
 ## Tested with
 
 OutSystems R&D Jira projects (`RDUCH`, `RDUCO`, `RPOR`) and the OutSystems GitHub org. Other Jira / GitHub instances should work — only the custom field IDs (Story Points = `customfield_10004`, Dev info = `customfield_12600`, parent-RPOR dates = `customfield_15485/15486/15491`) might need adjustment in the SKILL.md.
