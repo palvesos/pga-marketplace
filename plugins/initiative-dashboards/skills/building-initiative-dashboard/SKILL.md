@@ -38,7 +38,35 @@ allowed-tools: Bash(acli jira:*),Bash(gh search:*),Bash(gh pr:*),Bash(npx:*),Bas
 
 ## Workflow
 
-### Step 0 — Prepare the initiative folder and read prior snapshot
+### Step 0 — Confirm scope and prepare the initiative folder
+
+#### Step 0.0 — Required up-front questions
+
+**Always ask, using `AskUserQuestion`, anything below that wasn't provided
+in the activation prompt.** Do not silently default; do not start fetching
+data until both answers are pinned.
+
+1. **Initiative key.** If the activation prompt didn't include an explicit
+   Jira key (e.g. `RDUCH-169`, `PU-M4.13.1`), ask the user which initiative
+   the report should focus on. Accept either:
+   - a Jira key (preferred), or
+   - a free-text name — in which case echo back the key you resolved it to
+     and confirm before proceeding.
+
+2. **Comparison window.** Ask which window the new snapshot should be
+   compared against. Offer exactly two options (matching the supported set
+   in Step 0.2):
+   - *"Since last report"* (most recent prior snapshot) — recommended
+   - *"Since last N weeks"* — and capture the N from the user
+
+   **Skip this question only when no prior snapshot exists** for the
+   initiative (first run — there's nothing to compare against). In that
+   case state "first snapshot for this initiative" and proceed.
+
+This is a hard requirement — the skill must not assume the input or
+silently default to *"since last report"* when prior snapshots exist.
+
+#### Step 0.1 — Prepare the folder
 
 Each initiative gets its own folder on disk so successive runs accumulate a
 time series of snapshots that can be compared.
@@ -76,18 +104,15 @@ mkdir -p "$FOLDER"
 ls -1t "$FOLDER"/*.md 2>/dev/null
 ```
 
-#### Step 0.1 — Pick the comparison target
+#### Step 0.2 — Resolve the comparison target
 
-The user controls which prior snapshot the new one is compared against.
-There are exactly two supported options:
+Apply the window the user picked in Step 0.0 against the prior `.md`
+files in `$FOLDER`. Exactly two windows are supported:
 
-| User phrasing                          | Resolution rule                                                |
+| User's answer                          | Resolution rule                                                |
 |----------------------------------------|----------------------------------------------------------------|
-| *"since last report"* (default)        | Most recent `.md` file (top of `ls -1t`)                       |
-| *"since last <N> weeks"*               | Snapshot with the **latest timestamp on-or-before `N*7` days ago** |
-
-**Default** when the user doesn't specify a window: *"since last report"*
-(most recent prior `.md` file).
+| *"Since last report"*                  | Most recent `.md` file (top of `ls -1t`)                       |
+| *"Since last <N> weeks"*               | Snapshot with the **latest timestamp on-or-before `N*7` days ago** |
 
 **Resolution algorithm** for the "last N weeks" case — the snapshot
 filename contains `__YYYY_MM_DD_HH_MM_SS`. Parse that timestamp from
@@ -104,10 +129,10 @@ oldest `.md` is *newer* than `today − N*7 days`):
    3 weeks ago (2026-05-06). Compare against that instead?"*
 3. If the user declines, treat the run as a first snapshot (no delta).
 
-If there are **no prior snapshots at all**, skip Step 0.2 and the delta
-narrative — this is a first snapshot.
+If there are **no prior snapshots at all**, skip the comparison and the
+delta narrative — this is a first snapshot.
 
-#### Step 0.2 — Load the chosen prior snapshot
+#### Step 0.3 — Load the chosen prior snapshot
 
 Once a target file is selected, **read it via the Read tool** and keep
 its frontmatter values in working memory. These inform:
@@ -116,7 +141,7 @@ its frontmatter values in working memory. These inform:
   section in the new state file (Step 7)
 
 If no prior snapshot exists, or the user declined the fallback in Step
-0.1, proceed without delta context and note "First snapshot" in the
+0.2, proceed without delta context and note "First snapshot" in the
 executive narrative.
 
 ### Step 1 — Gather the initiative tree from Jira
@@ -327,7 +352,7 @@ Strategic, outcome-oriented, calm. The reader is not in the day-to-day.
 Bulleted executive prose for Engineering Directors and PMs. 6-10 bullets:
 - Headline RAG with a one-line summary
 - Quantified scope progress (% delivered / in flight / remaining of sized SP)
-- **Delta vs. prior snapshot** (from Step 0.2) — one bullet that names
+- **Delta vs. prior snapshot** (from Step 0.3) — one bullet that names
   the comparison target so the reader knows the window, e.g.
   *"Since last report (2026-05-13): +12 SP delivered, RQ02 moved
   Yellow→Green, 2 new stories added to RQ03."* Omit if this is the first
