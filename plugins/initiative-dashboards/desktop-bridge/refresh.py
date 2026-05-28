@@ -261,14 +261,22 @@ def refresh(jira_key: str, *, full_fetch: bool = False) -> Path:
         except Exception as e:
             print(f"warning: prior snapshot {prior_md.name} unreadable ({e}), falling back to full walk", file=sys.stderr)
 
-    # Resolve items
+    # Resolve items — walks the main epic AND any linked epics so cross-team
+    # / sibling work shows up in the rollup. Same behaviour as SKILL.md Step 1.
     if fetch_mode == "incremental":
         prior_iso = prior.snapshot_iso  # type: ignore[union-attr]
         prior_items = {i.key: i for i in prior.items}  # type: ignore[union-attr]
+        # Reuse prior linked-epic set to avoid re-discovering on every run.
+        linked_epics = prior.linked_epics  # type: ignore[union-attr]
+        epics_to_walk = [jira_key] + list(linked_epics)
 
-        changed_rows = fetch_children(jira_key, since_iso=prior_iso)
-        added_rows = fetch_children(jira_key, since_iso=prior_iso, created_since=True)
-        keys_in_scope = fetch_reconcile_keys(jira_key)
+        changed_rows: list[dict[str, Any]] = []
+        added_rows: list[dict[str, Any]] = []
+        keys_in_scope: set[str] = set()
+        for epic_key in epics_to_walk:
+            changed_rows.extend(fetch_children(epic_key, since_iso=prior_iso))
+            added_rows.extend(fetch_children(epic_key, since_iso=prior_iso, created_since=True))
+            keys_in_scope.update(fetch_reconcile_keys(epic_key))
 
         working: dict[str, Item] = dict(prior_items)
         changed_keys: set[str] = set()
@@ -290,15 +298,21 @@ def refresh(jira_key: str, *, full_fetch: bool = False) -> Path:
             if it.key in changed_keys:
                 it.pr_url, it.pr_state, it.pr_repo = fetch_prs_for_item(it.key)
 
-        linked_epics = prior.linked_epics  # type: ignore[union-attr]
-
     else:
-        rows = fetch_children(jira_key)
+        linked_epics = fetch_linked_epics(jira_key)
+        epics_to_walk = [jira_key] + list(linked_epics)
+        seen: set[str] = set()
+        rows: list[dict[str, Any]] = []
+        for epic_key in epics_to_walk:
+            for row in fetch_children(epic_key):
+                if row["key"] in seen:
+                    continue       # same item linked under multiple epics
+                seen.add(row["key"])
+                rows.append(row)
         items = [jira_row_to_item(r) for r in rows]
         for it in items:
             enrich_item(it)  # sp + updated from `view --fields *all`
             it.pr_url, it.pr_state, it.pr_repo = fetch_prs_for_item(it.key)
-        linked_epics = fetch_linked_epics(jira_key)
 
     # Header data
     epic = fetch_epic(jira_key)
