@@ -1,0 +1,19 @@
+[project]
+name = "initiative-dashboards-bridge"
+version = "0.1.0"
+description = "Local MCP server + headless refresh script bridging the initiative-dashboards skill to Claude Desktop."
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0",
+]
+
+[project.scripts]
+initiative-dashboards-refresh = "refresh:main"
+initiative-dashboards-mcp = "mcp_server:mcp.run"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["snapshot", "refresh", "mcp_server"]

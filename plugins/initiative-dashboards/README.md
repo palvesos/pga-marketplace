@@ -19,6 +19,10 @@ Given a single Jira epic or initiative key, the `building-initiative-dashboard` 
 | [`building-initiative-dashboard`](skills/building-initiative-dashboard) | Build a self-contained progress dashboard for one initiative or epic |
 | [`building-portfolio-dashboard`](skills/building-portfolio-dashboard) | Roll up status across multiple initiatives or a Value Milestone — drills down via `building-initiative-dashboard` per item and renders an executive rollup with portfolio KPIs, Highlights/Lowlights, filterable Initiatives Index, Gantt timeline, and a click-to-show detail panel |
 
+## Claude Desktop bridge
+
+For viewing dashboards as live artifacts in Claude Desktop and scheduling daily metric refreshes, see [`desktop-bridge/`](desktop-bridge) — a small local MCP server + headless refresh script that reads the same `~/initiative-dashboards/<slug>/` snapshots the skill writes.
+
 ## Trigger phrases
 
 ### `building-initiative-dashboard` (single initiative)
