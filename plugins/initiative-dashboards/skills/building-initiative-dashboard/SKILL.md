@@ -73,10 +73,27 @@ time series of snapshots that can be compared.
 
 **Output path override.** If the caller (a user or another skill, e.g.
 `building-portfolio-dashboard`) passed an explicit output directory or
-filename for the HTML, honour it and **skip the state-folder behaviour
-entirely** (no `.md` snapshot, no delta line). The state-folder flow only
-applies to standalone runs where the user said something like *"build a
-dashboard for RDUCH-169"* without specifying a path.
+filename for the HTML, honour it for the HTML write, but the
+state-folder behaviour is controlled separately via the
+`write_state` contract:
+
+- `write_state` unset / `false` (default when an output path override is
+  given) — skip the state-folder behaviour entirely (no `.md` snapshot,
+  no delta line, no comparison-window question). Use this when the
+  caller only wants the HTML rendered to a specific path.
+- `write_state: true` — still write the per-initiative `.md` to the
+  standard initiative folder
+  (`$INITIATIVE_DASHBOARDS_DIR/<slug>/<slug>__<timestamp>.md`) and run
+  the delta comparison against the prior initiative snapshot in that
+  folder, exactly as if this were a standalone run. The HTML still goes
+  to the caller-provided path. The portfolio skill uses this mode to
+  refresh per-initiative history for the initiatives the user chose to
+  update.
+
+When the caller did **not** pass an output path override (i.e. a normal
+standalone run triggered by *"build a dashboard for RDUCH-169"*),
+`write_state` is implicitly `true` and both the HTML and `.md` are
+written under `$INITIATIVE_DASHBOARDS_DIR/<slug>/`.
 
 **Base directory** (in order of precedence):
 1. `$INITIATIVE_DASHBOARDS_DIR` environment variable, if set
