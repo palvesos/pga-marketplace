@@ -64,7 +64,23 @@ def _check_prereqs() -> None:
 
 # --- Jira fetch --------------------------------------------------------------
 
+SEARCH_FIELDS = "key,summary,status,assignee,issuetype"
+"""`acli jira workitem search --fields` only allows a whitelist of standard
+fields — custom fields and `updated` are rejected. We use search for the
+key/status/type sweep and then `view --fields '*all'` per item to enrich
+with story points, updated timestamp, and the dev-info field."""
+
+SP_FIELD = "customfield_10004"
+DEVINFO_FIELD = "customfield_12600"
+
+
 def fetch_epic(jira_key: str) -> dict[str, Any]:
+    out = _run(["acli", "jira", "workitem", "view", jira_key, "--fields", "*all", "--json"])
+    return json.loads(out)
+
+
+def fetch_item_detail(jira_key: str) -> dict[str, Any]:
+    """Per-item enrichment via `view --fields '*all' --json`."""
     out = _run(["acli", "jira", "workitem", "view", jira_key, "--fields", "*all", "--json"])
     return json.loads(out)
 
@@ -78,7 +94,7 @@ def fetch_children(jira_key: str, since_iso: str | None = None,
     out = _run([
         "acli", "jira", "workitem", "search",
         "--jql", jql,
-        "--fields", "key,summary,status,assignee,issuetype,updated,customfield_10004,customfield_12600",
+        "--fields", SEARCH_FIELDS,
         "--json",
     ])
     return json.loads(out) if out.strip() else []
@@ -109,6 +125,8 @@ def fetch_linked_epics(jira_key: str) -> list[str]:
 # --- Item normalization ------------------------------------------------------
 
 def jira_row_to_item(row: dict[str, Any]) -> Item:
+    """Build an Item from the lightweight search row. `sp` / `updated` /
+    `pr_*` come from a follow-up `view` call (see `enrich_item`)."""
     f = row.get("fields", {})
     assignee = f.get("assignee") or {}
     return Item(
@@ -116,12 +134,26 @@ def jira_row_to_item(row: dict[str, Any]) -> Item:
         type=(f.get("issuetype") or {}).get("name"),
         summary=f.get("summary"),
         status=(f.get("status") or {}).get("name"),
-        sp=f.get("customfield_10004"),
+        sp=None,
         track=_classify_track(f.get("summary", ""), row["key"]),
         assignee=assignee.get("emailAddress") or assignee.get("displayName") or "-",
-        updated=f.get("updated"),
+        updated=None,
         pr_url=None, pr_state=None, pr_repo=None,
     )
+
+
+def enrich_item(item: Item) -> None:
+    """Fill in `sp` and `updated` from a `view --fields '*all'` call.
+
+    PR URL/state/repo are populated separately by `fetch_prs_for_item`."""
+    try:
+        detail = fetch_item_detail(item.key)
+    except RuntimeError as e:
+        print(f"warning: could not enrich {item.key}: {e}", file=sys.stderr)
+        return
+    f = detail.get("fields", {}) or {}
+    item.sp = f.get(SP_FIELD)
+    item.updated = f.get("updated")
 
 
 def _classify_track(summary: str, key: str) -> str:
@@ -239,9 +271,12 @@ def refresh(jira_key: str, *, full_fetch: bool = False) -> Path:
         keys_in_scope = fetch_reconcile_keys(jira_key)
 
         working: dict[str, Item] = dict(prior_items)
+        changed_keys: set[str] = set()
         for row in changed_rows + added_rows:
             it = jira_row_to_item(row)
+            enrich_item(it)  # sp + updated from `view --fields *all`
             working[it.key] = it
+            changed_keys.add(it.key)
 
         # Drop items no longer in scope
         for k in list(working):
@@ -251,7 +286,6 @@ def refresh(jira_key: str, *, full_fetch: bool = False) -> Path:
         items = list(working.values())
 
         # Re-fetch PRs only for items in the changed/added set
-        changed_keys = {row["key"] for row in changed_rows + added_rows}
         for it in items:
             if it.key in changed_keys:
                 it.pr_url, it.pr_state, it.pr_repo = fetch_prs_for_item(it.key)
@@ -262,6 +296,7 @@ def refresh(jira_key: str, *, full_fetch: bool = False) -> Path:
         rows = fetch_children(jira_key)
         items = [jira_row_to_item(r) for r in rows]
         for it in items:
+            enrich_item(it)  # sp + updated from `view --fields *all`
             it.pr_url, it.pr_state, it.pr_repo = fetch_prs_for_item(it.key)
         linked_epics = fetch_linked_epics(jira_key)
 
