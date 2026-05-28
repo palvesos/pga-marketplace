@@ -1,13 +1,15 @@
 """MCP server bridging local snapshot files to Claude Desktop.
 
-Exposes four tools:
-    refresh_dashboard(jira_key, mode="metrics")
+Exposes four tools (all named in "snapshot" terms to avoid colliding with
+Jira-style "initiative" / "dashboard" verbs from other MCP servers):
+
+    refresh_snapshot(jira_key, mode="metrics")
         mode="metrics" -> headless refresh.py run (no LLM)
         mode="data-only" -> read latest snapshot without re-fetching
-    get_latest_dashboard(jira_key)
+    get_latest_snapshot(jira_key)
         Returns the latest snapshot for the given initiative as JSON.
-    list_initiatives()
-        Returns all initiatives that have at least one snapshot on disk.
+    list_snapshots()
+        Returns all initiative snapshots on disk.
     get_snapshot_history(jira_key, limit=10)
         Returns the last <limit> snapshots' metadata + scope KPIs (for trends).
 
@@ -59,8 +61,8 @@ def _snap_to_json(snap: Snapshot) -> dict:
 
 
 @mcp.tool()
-def refresh_dashboard(jira_key: str, mode: str = "metrics", full_fetch: bool = False) -> dict:
-    """Refresh the metrics for a Jira initiative or epic.
+def refresh_snapshot(jira_key: str, mode: str = "metrics", full_fetch: bool = False) -> dict:
+    """Refresh the snapshot for a Jira initiative or epic.
 
     Args:
         jira_key: e.g. "RDUCH-169" — the Jira key for the initiative.
@@ -92,7 +94,7 @@ def refresh_dashboard(jira_key: str, mode: str = "metrics", full_fetch: bool = F
 
 
 @mcp.tool()
-def get_latest_dashboard(jira_key: str) -> dict:
+def get_latest_snapshot(jira_key: str) -> dict:
     """Return the most recent snapshot for an initiative.
 
     Useful when an artifact or chat just wants to display today's data without
@@ -105,8 +107,12 @@ def get_latest_dashboard(jira_key: str) -> dict:
 
 
 @mcp.tool()
-def list_initiatives() -> dict:
-    """List all initiatives that currently have at least one snapshot on disk."""
+def list_snapshots() -> dict:
+    """List all initiative dashboard snapshots currently on disk.
+
+    Use this when the user asks "list my initiative snapshots", "what
+    dashboards do I have", or similar. This is local-snapshot scope —
+    do not confuse with Jira's "list initiatives" semantics."""
     base = base_dir()
     if not base.is_dir():
         return {"base_dir": str(base), "initiatives": []}

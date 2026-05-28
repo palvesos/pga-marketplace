@@ -7,7 +7,7 @@ Three pieces, all on your machine, nothing in the cloud:
 | File | Role |
 |---|---|
 | `refresh.py` | Headless data refresh — calls `acli` + `gh`, writes a new `.md` snapshot to `~/initiative-dashboards/<slug>/`. No LLM in the loop. |
-| `mcp_server.py` | MCP server Claude Desktop connects to. Exposes `refresh_dashboard`, `get_latest_dashboard`, `list_initiatives`, `get_snapshot_history`. |
+| `mcp_server.py` | MCP server Claude Desktop connects to. Exposes `refresh_snapshot`, `get_latest_snapshot`, `list_snapshots`, `get_snapshot_history`. |
 | `snapshot.py` | Shared parser/writer for the Step 7 state-snapshot schema. |
 
 ## Prerequisites
@@ -57,13 +57,13 @@ See `claude_desktop_config.snippet.json` for a copy-pasteable version. Restart C
 
 In a Claude Desktop chat:
 
-> "List my initiative dashboards"
+> "List my initiative snapshots"
 
-> "Refresh metrics for RDUCH-169"
+> "Update snapshot from RDUCH-169" — or — "Refresh snapshot for RDUCH-169"
 
-> "Show the latest RDUCH-169 dashboard as an interactive artifact"
+> "Show the latest RDUCH-169 snapshot as an interactive artifact"
 
-The third prompt is where Claude reads the snapshot via `get_latest_dashboard`, generates a React + Chart.js artifact populated with the data, and renders it inline. Each new chat re-fetches the latest snapshot, so reopening the artifact tomorrow shows tomorrow's numbers.
+The third prompt is where Claude reads the snapshot via `get_latest_snapshot`, generates a React + Chart.js artifact populated with the data, and renders it inline. Each new chat re-fetches the latest snapshot, so reopening the artifact tomorrow shows tomorrow's numbers.
 
 ## Schedule a daily refresh
 
@@ -73,7 +73,7 @@ Use Claude Desktop's built-in **Tasks** (Scheduled Prompts) — no cron required
 2. **Schedule**: Daily at, say, 08:00.
 3. **Prompt**:
 
-   > Refresh dashboard metrics for RDUCH-169, RDUCH-200, and PU-M4.13.1. Use the `refresh_dashboard` MCP tool with `mode="metrics"` for each. Reply with a one-line summary of any RAG changes since yesterday.
+   > Update snapshots for RDUCH-169, RDUCH-200, and PU-M4.13.1. Call `refresh_snapshot` with `mode="metrics"` for each. Reply with a one-line summary of any RAG changes since yesterday.
 
 Each scheduled run calls `refresh.py` via the MCP tool, which:
 
@@ -87,7 +87,7 @@ Each scheduled run calls `refresh.py` via the MCP tool, which:
 
 | Mode                | Triggered by                                 | Cost           | What changes                     |
 |---------------------|----------------------------------------------|----------------|----------------------------------|
-| **Metrics refresh** | `refresh_dashboard(..., mode="metrics")` from a scheduled task or chat | Free (just acli/gh) | KPIs, status counts, items, RAG carried over |
+| **Metrics refresh** | `refresh_snapshot(..., mode="metrics")` from a scheduled task or chat | Free (just acli/gh) | KPIs, status counts, items, RAG carried over |
 | **Full LLM report** | Asking Claude to run the `building-initiative-dashboard` skill end-to-end (via Claude Code, or by asking Claude Desktop to "regenerate the full report"). The LLM authors fresh narrative, then writes via the same MCP tool path. | Anthropic API credit | All narrative blocks re-authored |
 
 The expensive narrative refresh is opt-in — call it weekly, or when you want a fresh executive prose pass before sharing the dashboard with leadership.
@@ -96,12 +96,12 @@ The expensive narrative refresh is opt-in — call it weekly, or when you want a
 
 | Tool | Args | Returns |
 |---|---|---|
-| `refresh_dashboard` | `jira_key`, `mode` (`"metrics"` \| `"data-only"`), `full_fetch` | New snapshot JSON |
-| `get_latest_dashboard` | `jira_key` | Most recent snapshot JSON |
-| `list_initiatives` | — | All initiatives with at least one snapshot on disk |
+| `refresh_snapshot` | `jira_key`, `mode` (`"metrics"` \| `"data-only"`), `full_fetch` | New snapshot JSON |
+| `get_latest_snapshot` | `jira_key` | Most recent snapshot JSON |
+| `list_snapshots` | — | All initiatives with at least one snapshot on disk |
 | `get_snapshot_history` | `jira_key`, `limit` (default 10) | Time series of `{snapshot_iso, rag, scope, counts_by_status}` |
 
-The JSON returned by `refresh_dashboard` / `get_latest_dashboard` matches the YAML frontmatter schema documented in SKILL.md Step 7 — so any artifact Claude generates can use the same field names that the skill's HTML template uses.
+The JSON returned by `refresh_snapshot` / `get_latest_snapshot` matches the YAML frontmatter schema documented in SKILL.md Step 7 — so any artifact Claude generates can use the same field names that the skill's HTML template uses.
 
 ## Troubleshooting
 
