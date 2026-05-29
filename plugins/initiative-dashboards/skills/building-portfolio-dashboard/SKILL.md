@@ -73,22 +73,8 @@ data until all answers are pinned.
    for this slug (first run — nothing to compare against). In that case
    state *"first snapshot for this portfolio"* and proceed.
 
-4. **Per-initiative state refresh scope.** Ask which child initiatives
-   should also have their own per-initiative state snapshot refreshed
-   as part of this portfolio run. Offer:
-   - *"All initiatives"* — every child writes its own `.md` snapshot
-   - *"None"* — only the portfolio-level `.md` is written; per-initiative
-     dashboards are still generated for the rollup but their state
-     folders are not touched (recommended for quick re-runs)
-   - *"Named subset"* — capture the comma-separated list of Jira keys
-     to refresh; all others render without writing per-initiative state
-
-   The chosen scope drives the `write_state` flag passed to each
-   per-initiative drill-down in Step 2.
-
 These are hard requirements — the skill must not assume the input or
-silently default to *"since last report"* / *"all initiatives"* when
-prior snapshots exist.
+silently default to *"since last report"* when prior snapshots exist.
 
 #### Step 0.1 — Prepare the folder
 
@@ -190,74 +176,135 @@ If the input is a **list**, use the keys verbatim.
 running the drill-down** — drill-downs are expensive (many Jira/PR
 queries per initiative).
 
-### Step 2 — Drill down per initiative
+### Step 2 — Obtain per-initiative data (check existing snapshots first)
 
-For each initiative key, follow the `building-initiative-dashboard`
-workflow:
+Process each initiative **sequentially** — the Jira CLI is rate-limited
+and parallel calls can stomp on each other. A 5-initiative rollup
+typically takes 2–4 minutes for fresh builds.
 
-- Read the skill at
-  `~/.claude/skills/building-initiative-dashboard/SKILL.md` (or the
-  marketplace-installed path) and follow Steps 1–6
-- Render the per-initiative dashboard to `$FOLDER/dashboard-<KEY>.html`
-  (alongside the portfolio HTML, under the portfolio's folder from
-  Step 0.1) — this is the inner skill's "output path override"
-- **Pass `write_state` to the inner skill** based on the refresh scope
-  the user chose in Step 0.0.4:
-  - *"All initiatives"* → `write_state: true` for every drill-down
-  - *"None"* → `write_state: false` (the default for output-path overrides)
-  - *"Named subset"* → `write_state: true` only for keys in the subset;
-    `false` for the rest
+For **each** initiative key resolved in Step 1, do the following:
 
-  When `write_state` is `true`, the inner skill also writes its own
-  `<slug>__<timestamp>.md` under `$INITIATIVE_DASHBOARDS_DIR/<slug>/`
-  and runs its own delta against the prior per-initiative snapshot —
-  see the inner skill's Step 0.1 for the contract.
-- **Capture** the following synthesised content from the per-initiative
-  render — this populates the rollup card **and** the initiatives index
-  table:
-  - `key`, `title`, `productboard_url` (if any)
-  - `rag_status` (`green` | `yellow` | `red`)
-  - `rag_label`, `rag_headline`
-  - `exec_status_bullets` (the 3-5 `<li>` bullets from the inner card 2)
-  - `highlights[]`, `lowlights[]` (3 max each, the same bullets used in
-    the inner card 3)
-  - `sp_done`, `sp_in_flight`, `sp_remaining`, `sp_unsized_count`
-  - `open_pr_count`
-  - **`team`** — engineering team (Jira-project → team mapping, see
-    inner skill's data-sources.md)
-  - **`rpor_key`** / **`rpor_label`** — the parent RPOR (Value
-    Milestone, Initiative, or Solution Enabler) for this epic.
-    Discover via:
-    ```bash
-    # Try direct linkage first
-    acli jira workitem search --jql "issue in linkedIssues(<KEY>) AND project = RPOR" \
-      --fields "key,summary,issuetype" --csv
-    # Fall back to summary-substring match if no direct link
-    acli jira workitem search --jql "project = RPOR AND summary ~ \"<VM-keyword>\"" \
-      --fields "key,summary,issuetype" --csv --limit 5
-    ```
-    `rpor_label` is a short tag like `PU-M2.1.8` (extract from the RPOR
-    summary prefix).
-  - **`target_start`**, **`target_due`**, **`ga_date`** — feed the
-    portfolio Gantt chart. Resolution order:
-    1. Read from the **parent RPOR** (preferred — that's where dates
-       live for VMs, Initiatives, Solution Enablers):
-       - `customfield_15485` — Target Start
-       - `customfield_15486` — Target Due
-       - `customfield_15491` — GA / EAP Date
-    2. If the RPOR has no dates (e.g. an Initiative still in Definition),
-       fall back to the **epic's own** dates:
-       - `customfield_15330` — Target Start
-       - `duedate` — Due Date
-       - (no GA fallback at the epic level — leave `ga_date` null)
+#### Step 2.1 — Check for prior initiative-dashboard snapshots
 
-    Date values must be ISO `YYYY-MM-DD` strings. If any is missing,
-    use `null`; the Gantt will skip the bar (or omit the GA marker)
-    accordingly.
+Derive the initiative slug and look for existing snapshots on disk:
 
-Do the drill-downs **sequentially** — the Jira CLI is rate-limited and
-parallel calls can stomp on each other. A 5-initiative rollup typically
-takes 2-4 minutes.
+```bash
+BASE_DIR="${INITIATIVE_DASHBOARDS_DIR:-$HOME/initiative-dashboards}"
+# e.g. RDUCH-169 → rduch_169
+INIT_SLUG="$(echo '<KEY>' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/_/g' | sed 's/__*/_/g')"
+INIT_FOLDER="$BASE_DIR/$INIT_SLUG"
+ls -1t "$INIT_FOLDER"/*.md 2>/dev/null | head -10
+```
+
+**If one or more `.md` snapshots exist**, present them to the user via
+`AskUserQuestion` before proceeding. The question must show:
+
+- Each available snapshot with its **date** (parsed from the filename
+  timestamp) and its **RAG status + headline** (read from the
+  frontmatter of the most-recent file to give the user context).
+- An option to **build a new full dashboard** using the
+  `building-initiative-dashboard` skill.
+
+Example question wording:
+> *RDUCH-169 has 3 prior snapshots. Which should be used for the
+> portfolio rollup?*
+> - *2026-05-28 — Green: "Both LLDs approved and first RQ01 milestone shipped."* (most recent)
+> - *2026-05-14 — Yellow: "LLD review outstanding on RQ02 track."*
+> - *2026-04-30 — Yellow: "First sprint in flight; LLDs pending."*
+> - *Build a new full dashboard now (invokes building-initiative-dashboard)*
+
+**If no snapshots exist**, skip the question and go directly to
+Step 2.3 (build a new one).
+
+#### Step 2.2 — Reuse an existing snapshot
+
+If the user selects a prior snapshot:
+
+1. **Read the chosen `.md`** file via the Read tool.
+2. Extract all rollup fields from its frontmatter and narrative body:
+   - `key`, `title_short`, `productboard_url` (if any)
+   - `rag_status`, `rag_label`, `rag_headline`
+   - `exec_status_bullets` — from the `## Executive Status` section
+   - `highlights[]`, `lowlights[]` — from the `## Highlights` /
+     `## Lowlights` sections (3 max each)
+   - `sp_done`, `sp_in_flight`, `sp_remaining`, `sp_unsized_count`
+   - `open_pr_count`
+   - `team`, `rpor_key`, `rpor_label`
+   - `target_start`, `target_due`, `ga_date`
+3. Locate the corresponding HTML file (same stem as the `.md` but with
+   `.html` extension). **Copy** it into the portfolio folder as
+   `$FOLDER/dashboard-<KEY>.html` so the portfolio's drill-down links
+   work:
+   ```bash
+   cp "$INIT_FOLDER/<stem>.html" "$FOLDER/dashboard-<KEY>.html"
+   ```
+   If the HTML is not found alongside the `.md`, note this in the
+   user-facing report (Step 7) but continue — the index table will
+   still link to the missing path.
+4. Set `write_state: false` for this initiative (no new per-initiative
+   snapshot is written — the user chose an existing one).
+5. Proceed to the next initiative — **do not** invoke the inner skill.
+
+#### Step 2.3 — Build a new initiative dashboard
+
+If the user chose *"Build a new full dashboard now"* (or no snapshot
+existed):
+
+1. **Invoke the `building-initiative-dashboard` skill** — read the
+   skill file at the marketplace-installed path:
+
+   ```
+   plugins/initiative-dashboards/skills/building-initiative-dashboard/SKILL.md
+   ```
+
+   Follow the skill's full workflow (Steps 1–6), passing:
+   - **Output path override**: `$FOLDER/dashboard-<KEY>.html`
+   - **`write_state`**: `true` — the inner skill writes its own
+     `<slug>__<timestamp>.md` under `$INITIATIVE_DASHBOARDS_DIR/<slug>/`
+     and runs its own delta against the prior per-initiative snapshot.
+
+2. **Capture** the following synthesised content from the completed
+   per-initiative render — this populates the rollup card **and** the
+   initiatives index table:
+   - `key`, `title`, `productboard_url` (if any)
+   - `rag_status` (`green` | `yellow` | `red`)
+   - `rag_label`, `rag_headline`
+   - `exec_status_bullets` (the 3-5 `<li>` bullets from the inner card 2)
+   - `highlights[]`, `lowlights[]` (3 max each, the same bullets used in
+     the inner card 3)
+   - `sp_done`, `sp_in_flight`, `sp_remaining`, `sp_unsized_count`
+   - `open_pr_count`
+   - **`team`** — engineering team (Jira-project → team mapping, see
+     inner skill's data-sources.md)
+   - **`rpor_key`** / **`rpor_label`** — the parent RPOR (Value
+     Milestone, Initiative, or Solution Enabler) for this epic.
+     Discover via:
+     ```bash
+     # Try direct linkage first
+     acli jira workitem search --jql "issue in linkedIssues(<KEY>) AND project = RPOR" \
+       --fields "key,summary,issuetype" --csv
+     # Fall back to summary-substring match if no direct link
+     acli jira workitem search --jql "project = RPOR AND summary ~ \"<VM-keyword>\"" \
+       --fields "key,summary,issuetype" --csv --limit 5
+     ```
+     `rpor_label` is a short tag like `PU-M2.1.8` (extract from the RPOR
+     summary prefix).
+   - **`target_start`**, **`target_due`**, **`ga_date`** — feed the
+     portfolio Gantt chart. Resolution order:
+     1. Read from the **parent RPOR** (preferred — that's where dates
+        live for VMs, Initiatives, Solution Enablers):
+        - `customfield_15485` — Target Start
+        - `customfield_15486` — Target Due
+        - `customfield_15491` — GA / EAP Date
+     2. If the RPOR has no dates (e.g. an Initiative still in Definition),
+        fall back to the **epic's own** dates:
+        - `customfield_15330` — Target Start
+        - `duedate` — Due Date
+        - (no GA fallback at the epic level — leave `ga_date` null)
+
+     Date values must be ISO `YYYY-MM-DD` strings. If any is missing,
+     use `null`; the Gantt will skip the bar (or omit the GA marker)
+     accordingly.
 
 ### Step 3 — Compute portfolio-level KPIs
 
@@ -444,8 +491,8 @@ snapshot_iso: 2026-05-28T09:14:02Z
 snapshot_date: 2026-05-28
 html_file: rpor_28633__2026_05_28_09_14_02.html
 previous_snapshot: rpor_28633__2026_05_14_08_02_11.md   # or null on first run
-refresh_scope: subset                        # all | none | subset
-refreshed_keys: [RDUCH-169]                  # keys for which write_state=true was passed (omit when refresh_scope=all/none)
+freshly_built_keys: [RDUCH-169]              # keys for which building-initiative-dashboard was invoked this run
+reused_snapshot_keys: [RDUCH-151, RDUCH-200] # keys for which a prior local snapshot was reused
 kpis:
   initiatives_total: 3
   rag_green: 1
@@ -517,8 +564,9 @@ sources_queried: [Jira, GitHub]
   `team`, `rpor_key`, `sp_done`, `sp_in_flight`, `sp_remaining`,
   `open_pr_count`, and `per_initiative_html`. Missing fields force the
   next run to re-derive them.
-- Record `refresh_scope` and `refreshed_keys` so the next run can audit
-  which children had their own state refreshed.
+- Record `freshly_built_keys` and `reused_snapshot_keys` so the next
+  run can audit which children had their own state refreshed and which
+  were served from a prior local snapshot.
 - Do not write secrets or PII beyond what's already in the HTML.
 
 ### Step 7 — Report back to the user
@@ -529,7 +577,9 @@ Tell the user:
   (e.g. *"compared against rpor_28633__2026_05_14_08_02_11.md
   (14 days ago, matched your 'last 2 weeks' request)"*) or
   *"first portfolio snapshot"* if none was available
-- the refresh scope applied and, when *"subset"*, the keys refreshed
+- which initiatives were freshly built via `building-initiative-dashboard`
+  and which reused an existing local snapshot (and which snapshot date
+  was reused for each)
 - a one-line headline of the portfolio delta (e.g.
   *"RAG steady at 1G/1Y/1R; SP Done +12 since 2026-05-14"*) — omit
   on first snapshot
@@ -550,10 +600,11 @@ Tell the user:
 6. **Snapshots are append-only** — never overwrite or delete prior
    `.md` or `.html` files in `$FOLDER`. Each run adds a new timestamped
    pair so the user can scroll back through portfolio history.
-7. **Mind the refresh scope.** *"All"* is expensive on large VMs (one
-   inner state walk per child); *"None"* is the fast default for
-   quick re-runs. *"Subset"* is the right call when only a couple of
-   initiatives moved.
+7. **Check for existing initiative snapshots before building.** A fresh
+   build via `building-initiative-dashboard` can take 2–4 min per
+   initiative. Always offer the user the chance to reuse a prior local
+   snapshot (Step 2.1) before invoking the inner skill. This makes
+   portfolio re-runs fast when most initiatives haven't moved.
 
 ## Common Mistakes
 
@@ -579,10 +630,16 @@ Single-file `portfolio-dashboard.html` writes destroy history.
 → **Always write to `$FOLDER/<slug>__<timestamp>.html` (+ `.md`) so
 snapshots accumulate.**
 
-### ❌ Refreshing every child by default
-*"All initiatives"* on a large VM can take 10+ minutes.
-→ **Ask the user explicitly via Step 0.0.4; default expectation is
-*"None"* for quick re-runs.**
+### ❌ Skipping the local-snapshot check and always building fresh
+Building a new initiative dashboard is expensive (2–4 min per initiative).
+→ **Always check for prior local snapshots first (Step 2.1) and offer
+them to the user before invoking `building-initiative-dashboard`.**
+
+### ❌ Not copying the reused HTML into the portfolio folder
+If the existing `.html` stays in the initiative folder instead of being
+copied to `$FOLDER/dashboard-<KEY>.html`, the portfolio's drill-down
+links break.
+→ **Always `cp` the reused HTML into `$FOLDER` as `dashboard-<KEY>.html`.**
 
 ## Quick Reference
 
@@ -590,7 +647,9 @@ snapshots accumulate.**
 |---|---|
 | Detect VM | `acli jira workitem view <KEY> --fields "issuetype" --json` |
 | Find VM children (epics) | `acli jira workitem search --jql "\"Epic Link\" = <VM> OR parent = <VM> OR issue in linkedIssues(<VM>)"` |
-| Per-initiative drilldown | Follow `building-initiative-dashboard` SKILL.md (pass `write_state` per Step 0.0.4) |
+| Check prior initiative snapshots | `ls -1t "$BASE_DIR/<slug>"/*.md 2>/dev/null \| head -10` |
+| Reuse existing snapshot | Read `.md` frontmatter; `cp <stem>.html $FOLDER/dashboard-<KEY>.html` |
+| Build new initiative dashboard | Invoke `building-initiative-dashboard` SKILL.md with output path + `write_state: true` |
 | Compute timestamp | `date +"%Y_%m_%d_%H_%M_%S"` |
 | Create portfolio folder | `mkdir -p "${INITIATIVE_DASHBOARDS_DIR:-$HOME/initiative-dashboards}/portfolios/<slug>"` |
 | List prior portfolio snapshots | `ls -1t <folder>/*.md \| head -5` |
