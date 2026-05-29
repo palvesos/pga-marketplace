@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Q2 2026 Portfolio — Dashboard Mockup v2</title>
+<style>
+  :root {
+    --bg-primary:#f0f2f7;
+    --bg-card:#ffffff;
+    --bg-header:#0f1629;
+    --text-primary:#1c2033;
+    --text-secondary:#6b7280;
+    --text-muted:#9ca3af;
+    --border:#e5e7ef;
+    --border-subtle:#f0f2f7;
+    --rag-green:#22a84a;
+    --rag-yellow:#e8a800;
+    --rag-red:#c23b3f;
+    --accent-blue:#3a6fb5;
+    --gap:16px;
+    --radius:12px;
+    --radius-sm:8px;
+    --shadow:0 1px 4px rgba(0,0,0,.06),0 0 1px rgba(0,0,0,.04);
+    --shadow-md:0 4px 16px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.5;font-size:14px}
+  a{color:var(--accent-blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .dashboard-container{max-width:1500px;margin:0 auto;padding:var(--gap) var(--gap) 40px}
+
+  /* ── HEADER ── */
+  .dashboard-header{
+    background:var(--bg-header);
+    color:#fff;
+    padding:22px 28px;
+    border-radius:var(--radius);
+    margin-bottom:var(--gap);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:14px;
+    position:relative;
+    overflow:hidden;
+  }
+  /* subtle grid texture */
+  .dashboard-header::before{
+    content:"";
+    position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size:32px 32px;
+    pointer-events:none;
+  }
+  .header-left{position:relative;z-index:1}
+  .header-eyebrow{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.45);margin-bottom:4px}
+  .dashboard-header h1{font-size:20px;font-weight:700;letter-spacing:-.2px}
+  .dashboard-header .subtitle{font-size:12px;color:rgba(255,255,255,.5);margin-top:3px}
+  .header-right{display:flex;align-items:center;gap:10px;position:relative;z-index:1;flex-wrap:wrap}
+  .header-rag-chips{display:flex;gap:7px}
+  .header-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;backdrop-filter:blur(4px)}
+  .header-chip.green{background:rgba(34,168,74,.18);color:#6adea1;border:1px solid rgba(34,168,74,.3)}
+  .header-chip.yellow{background:rgba(232,168,0,.18);color:#f8d96a;border:1px solid rgba(232,168,0,.3)}
+  .header-chip.red{background:rgba(194,59,63,.18);color:#f5979a;border:1px solid rgba(194,59,63,.3)}
+  .header-chip .chip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .header-chip.green .chip-dot{background:#6adea1}
+  .header-chip.yellow .chip-dot{background:#f8d96a}
+  .header-chip.red .chip-dot{background:#f5979a}
+  .header-snapshot{font-size:11px;color:rgba(255,255,255,.35);padding:5px 10px;border:1px solid rgba(255,255,255,.1);border-radius:6px;white-space:nowrap}
+
+  /* ── KPI ROW ── */
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--gap);margin-bottom:var(--gap)}
+  .kpi-card{
+    background:var(--bg-card);
+    border-radius:var(--radius);
+    padding:16px 20px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+    border-left:4px solid var(--border);
+    position:relative;
+    overflow:hidden;
+    transition:box-shadow .15s;
+  }
+  .kpi-card:hover{box-shadow:var(--shadow-md)}
+  .kpi-card.kpi-green{border-left-color:var(--rag-green)}
+  .kpi-card.kpi-yellow{border-left-color:var(--rag-yellow)}
+  .kpi-card.kpi-red{border-left-color:var(--rag-red)}
+  .kpi-card.kpi-blue{border-left-color:var(--accent-blue)}
+  .kpi-card.kpi-orange{border-left-color:#e07a30}
+  .kpi-label{font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;font-weight:600}
+  .kpi-value{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.5px}
+  .kpi-card.kpi-green .kpi-value{color:var(--rag-green)}
+  .kpi-card.kpi-yellow .kpi-value{color:#b07700}
+  .kpi-card.kpi-red .kpi-value{color:var(--rag-red)}
+  .kpi-card.kpi-blue .kpi-value{color:var(--accent-blue)}
+  .kpi-card.kpi-orange .kpi-value{color:#c0611a}
+  .kpi-sub{font-size:11px;color:var(--text-muted);margin-top:5px}
+  /* faint icon watermark */
+  .kpi-icon{position:absolute;right:14px;bottom:10px;font-size:28px;opacity:.07;user-select:none;pointer-events:none;line-height:1}
+
+  /* ── EXEC ROW ── */
+  .exec-row{display:grid;grid-template-columns:2fr 1.5fr;gap:var(--gap);margin-bottom:var(--gap)}
+  .exec-card{
+    background:var(--bg-card);
+    border-radius:var(--radius);
+    padding:22px 26px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+  }
+  .section-label{
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--text-muted);
+    margin-bottom:12px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .section-label-bar{width:3px;height:12px;border-radius:2px;flex-shrink:0}
+  .section-label-bar.blue{background:#4C72B0}
+  .section-label-bar.orange{background:#DD8452}
+  .section-label-bar.purple{background:#8172B3}
+  .section-label-bar.green{background:#55A868}
+  .exec-card ul{padding-left:18px;font-size:13.5px;line-height:1.65;margin:0;color:var(--text-primary)}
+  .exec-card li{margin-bottom:5px}
+  .exec-card.hl .li-key{
+    display:inline-block;font-family:'SF Mono','Monaco','Menlo',monospace;
+    font-size:10.5px;padding:1px 6px;border-radius:4px;
+    background:#eef0f3;color:#4a525e;border:1px solid #e0e3e9;
+    margin-right:6px;font-weight:600;text-decoration:none;vertical-align:1px
+  }
+
+  /* ── INDEX CARD ── */
+  .index-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:var(--gap)}
+  .index-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+  .index-filter-group{display:flex;align-items:center;gap:7px}
+  .index-filter-group label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+  .index-filter-group select{
+    padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);
+    background:#fff;font-size:12.5px;min-width:160px;color:var(--text-primary);
+    appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 9px center;padding-right:26px;
+  }
+  .index-reset{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:12px;cursor:pointer;color:var(--text-secondary)}
+  .index-reset:hover{background:#f4f6fa;color:var(--text-primary)}
+  .index-meta{margin-left:auto;font-size:11.5px;color:var(--text-secondary)}
+  .index-table{width:100%;border-collapse:collapse;font-size:13px}
+  .index-table thead th{
+    text-align:left;padding:9px 12px;border-bottom:2px solid var(--border);
+    color:var(--text-muted);font-weight:700;font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.6px;white-space:nowrap;
+  }
+  .index-table tbody td{padding:11px 12px;border-bottom:1px solid var(--border-subtle);vertical-align:middle}
+  .index-table tbody tr:hover{background:#f8f9fc}
+  .index-table tbody tr:last-child td{border-bottom:none}
+  .index-table tbody tr{cursor:pointer}
+  .index-table tbody tr.selected{background:#eaf2fb}
+  .rag-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
+  .rag-pill .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .rag-pill.green{background:#dcf5e4;color:#166534}.rag-pill.green .dot{background:var(--rag-green)}
+  .rag-pill.yellow{background:#fef9c3;color:#854d0e}.rag-pill.yellow .dot{background:var(--rag-yellow)}
+  .rag-pill.red{background:#fee2e2;color:#991b1b}.rag-pill.red .dot{background:var(--rag-red)}
+
+  /* ── GANTT ── */
+  .gantt-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:var(--gap)}
+  .gantt-scroll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .gantt-scroll-wrap::-webkit-scrollbar{height:5px}
+  .gantt-scroll-wrap::-webkit-scrollbar-track{background:transparent}
+  .gantt-scroll-wrap::-webkit-scrollbar-thumb{background:#d0d4dc;border-radius:3px}
+  .gantt-inner{min-width:600px;font-size:12px}
+  .gantt-axis-row{display:grid;grid-template-columns:200px 1fr;align-items:end;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:6px}
+  .gantt-axis-left{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+  .gantt-axis-right{position:relative;height:22px}
+  .gantt-axis-tick{position:absolute;top:0;bottom:0;border-left:1px dashed #dde0e8;padding-left:4px;font-size:10.5px;color:var(--text-muted);white-space:nowrap}
+  .gantt-axis-today{position:absolute;top:-2px;bottom:-8px;border-left:2px solid var(--rag-red);padding-left:4px;font-size:10px;font-weight:700;color:var(--rag-red);white-space:nowrap}
+  .gantt-row{display:grid;grid-template-columns:200px 1fr;align-items:center;gap:8px;padding:7px 0}
+  .gantt-row+.gantt-row{border-top:1px dashed #f0f2f7}
+  .gantt-label{font-size:12px;line-height:1.3;color:var(--text-primary)}
+  .gantt-label a{color:var(--text-primary);font-weight:600}
+  .gantt-label small{color:var(--text-muted);font-size:10.5px;display:block;margin-top:1px}
+  .gantt-track{position:relative;height:26px;background:#f4f6fa;border-radius:6px}
+  .gantt-bar{position:absolute;top:4px;bottom:4px;border-radius:5px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden}
+  .gantt-bar.green{background:linear-gradient(90deg,#22a84a,#178a39)}
+  .gantt-bar.yellow{background:linear-gradient(90deg,#e8a800,#c48f00);color:#2d2000}
+  .gantt-bar.red{background:linear-gradient(90deg,#c23b3f,#9e2e31)}
+  .gantt-marker{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2.5px solid #a87d00;z-index:2}
+  .gantt-marker::after{content:attr(data-label);position:absolute;top:-13px;left:-10px;font-size:9px;font-weight:700;color:#7a5b00;background:#fff7d6;padding:1px 5px;border:1px solid #c9a93c;border-radius:3px;white-space:nowrap}
+  .gantt-today-line{position:absolute;top:-4px;bottom:-4px;border-left:2px solid var(--rag-red);z-index:3}
+  .gantt-legend{display:flex;gap:16px;font-size:11px;color:var(--text-muted);margin-top:12px;padding-top:12px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap}
+  .gantt-legend-item{display:flex;align-items:center;gap:5px}
+  .gantt-legend-swatch{width:12px;height:8px;border-radius:2px}
+
+  /* ── DETAIL PANEL ── */
+  .detail-section{margin-bottom:var(--gap)}
+  .detail-panel-header{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:var(--radius) var(--radius) 0 0;
+    border-bottom:none;
+    padding:14px 24px;
+    display:flex;justify-content:space-between;align-items:center;
+    background:#f8f9fc;
+  }
+  .detail-panel-header h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);display:flex;align-items:center;gap:8px;margin:0}
+  .detail-panel-title{font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0;font-size:13px}
+  .detail-panel-header a{font-size:12px}
+  .detail-row{display:grid;grid-template-columns:minmax(200px,1fr) 2fr 1.5fr;gap:0;border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .detail-card{background:var(--bg-card);padding:20px 24px;display:flex;flex-direction:column;gap:10px;min-height:160px}
+  .detail-card+.detail-card{border-left:1px solid var(--border)}
+  .detail-label{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-bottom:4px}
+  .detail-rag{display:flex;align-items:center;gap:16px;margin-top:6px}
+  .rag-dot-big{width:52px;height:52px;border-radius:50%;flex-shrink:0}
+  .rag-dot-big.green{background:radial-gradient(circle at 30% 30%,#6dd687,var(--rag-green) 75%);box-shadow:0 0 18px rgba(34,168,74,.35)}
+  .rag-dot-big.yellow{background:radial-gradient(circle at 30% 30%,#ffe58f,var(--rag-yellow) 75%);box-shadow:0 0 18px rgba(232,168,0,.35)}
+  .rag-dot-big.red{background:radial-gradient(circle at 30% 30%,#f08080,var(--rag-red) 75%);box-shadow:0 0 18px rgba(194,59,63,.35)}
+  .rag-label-big{font-size:22px;font-weight:800;letter-spacing:-.3px}
+  .rag-sublabel{font-size:12.5px;color:var(--text-secondary);margin-top:3px;line-height:1.4}
+  .detail-card ul{padding-left:16px;font-size:13px;line-height:1.6;margin:0;color:var(--text-primary)}
+  .detail-card li{margin-bottom:4px}
+  .hl-section+.hl-section{margin-top:12px}
+  .hl-section h4{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .hl-section.highlights h4{color:#166534}
+  .hl-section.lowlights h4{color:#991b1b}
+  .hl-section ul{padding-left:16px;font-size:12.5px;line-height:1.5;margin:0}
+  .hl-section li{margin-bottom:3px}
+
+  /* ── FOOTER ── */
+  .dashboard-footer{margin-top:var(--gap);font-size:11px;color:var(--text-muted);text-align:center;padding:12px;display:flex;align-items:center;justify-content:center;gap:16px}
+  .footer-divider{width:1px;height:12px;background:var(--border)}
+
+  @media(max-width:960px){
+    .exec-row{grid-template-columns:1fr}
+    .detail-row{grid-template-columns:1fr}
+    .kpi-row{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+
+  <!-- HEADER -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="header-eyebrow">Portfolio Dashboard</div>
+      <h1>Q2 2026 Engineering Portfolio</h1>
+      <div class="subtitle">Engineering Directors &amp; Product Managers · 3 initiatives tracked</div>
+    </div>
+    <div class="header-right">
+      <div class="header-rag-chips">
+        <div class="header-chip green"><span class="chip-dot"></span>1 Green</div>
+        <div class="header-chip yellow"><span class="chip-dot"></span>1 Yellow</div>
+        <div class="header-chip red"><span class="chip-dot"></span>1 Red</div>
+      </div>
+      <div class="header-snapshot">Snapshot 2026-05-29</div>
+    </div>
+  </header>
+
+  <!-- KPI ROW -->
+  <section class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Initiatives</div>
+      <div class="kpi-value" style="color:var(--text-primary)">3</div>
+      <div class="kpi-sub">total tracked</div>
+      <div class="kpi-icon">📋</div>
+    </div>
+    <div class="kpi-card kpi-green">
+      <div class="kpi-label">Green</div>
+      <div class="kpi-value">1</div>
+      <div class="kpi-sub">on track</div>
+      <div class="kpi-icon">✓</div>
+    </div>
+    <div class="kpi-card kpi-yellow">
+      <div class="kpi-label">Yellow</div>
+      <div class="kpi-value">1</div>
+      <div class="kpi-sub">watch items</div>
+      <div class="kpi-icon">◐</div>
+    </div>
+    <div class="kpi-card kpi-red">
+      <div class="kpi-label">Red</div>
+      <div class="kpi-value">1</div>
+      <div class="kpi-sub">off track</div>
+      <div class="kpi-icon">!</div>
+    </div>
+    <div class="kpi-card kpi-green">
+      <div class="kpi-label">SP — Done</div>
+      <div class="kpi-value">9</div>
+      <div class="kpi-sub">across portfolio</div>
+      <div class="kpi-icon">🏁</div>
+    </div>
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-label">SP — In Flight</div>
+      <div class="kpi-value">20</div>
+      <div class="kpi-sub">across portfolio</div>
+      <div class="kpi-icon">⚡</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">SP — Remaining</div>
+      <div class="kpi-value" style="color:var(--text-primary)">32</div>
+      <div class="kpi-sub">sized only</div>
+      <div class="kpi-icon">⏳</div>
+    </div>
+    <div class="kpi-card kpi-orange">
+      <div class="kpi-label">Open PRs</div>
+      <div class="kpi-value">2</div>
+      <div class="kpi-sub">across portfolio</div>
+      <div class="kpi-icon">⤴</div>
+    </div>
+  </section>
+
+  <!-- EXEC ROW -->
+  <section class="exec-row">
+    <div class="exec-card">
+      <div class="section-label"><span class="section-label-bar blue"></span>Portfolio Executive Status</div>
+      <ul>
+        <li>One initiative (FAKE-100) is on track with both LLDs approved and first code in review. Team Bravo is delivering dependent changes in parallel.</li>
+        <li>FAKE-200 carries a sequencing risk: M1 implementation started before the LLD was approved; validation scope alignment is still pending.</li>
+        <li>FAKE-300 is the primary concern — the implementation epic remains In Design with no code shipped and no forecast date confirmed.</li>
+      </ul>
+    </div>
+    <div class="exec-card hl">
+      <div class="section-label"><span class="section-label-bar orange"></span>Portfolio Highlights / Lowlights</div>
+      <ul>
+        <li><span class="li-key">FAKE-100</span> Both LLDs approved; first PR in review.</li>
+        <li><span class="li-key">FAKE-200</span> <span style="color:#854d0e;font-weight:600">Sequencing risk</span> — M1 started before LLD approved.</li>
+        <li><span class="li-key">FAKE-300</span> <span style="color:#991b1b;font-weight:600">Blocker</span> — Implementation epic still In Design; no code shipped.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- INDEX TABLE -->
+  <section class="index-card">
+    <div class="section-label" style="margin-bottom:14px"><span class="section-label-bar purple"></span>Initiatives Index</div>
+    <div class="index-filters">
+      <div class="index-filter-group">
+        <label for="filter-team">Owner Team</label>
+        <select id="filter-team">
+          <option>All</option>
+          <option>Team Alpha</option>
+          <option>Team Bravo</option>
+        </select>
+      </div>
+      <div class="index-filter-group">
+        <label for="filter-rpor">Parent RPOR</label>
+        <select id="filter-rpor">
+          <option>All</option>
+          <option>RPOR-9001 — PU-A.1</option>
+          <option>RPOR-9002 — PU-A.2</option>
+          <option>RPOR-9003 — PU-B.1</option>
+        </select>
+      </div>
+      <button class="index-reset">Reset</button>
+      <span class="index-meta">3 of 3 initiatives</span>
+    </div>
+    <table class="index-table">
+      <thead>
+        <tr>
+          <th>Key</th><th>Initiative</th><th>Status</th><th>Owner Team</th><th>Parent RPOR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="selected">
+          <td><a href="#">FAKE-100</a></td>
+          <td>Multi-tenant Connectivity Hardening</td>
+          <td><span class="rag-pill green"><span class="dot"></span>Green</span></td>
+          <td>Team Alpha</td>
+          <td><a href="#">RPOR-9001</a> — PU-A.1</td>
+        </tr>
+        <tr>
+          <td><a href="#">FAKE-200</a></td>
+          <td>API Authentication Refactor</td>
+          <td><span class="rag-pill yellow"><span class="dot"></span>Yellow</span></td>
+          <td>Team Alpha</td>
+          <td><a href="#">RPOR-9002</a> — PU-A.2</td>
+        </tr>
+        <tr>
+          <td><a href="#">FAKE-300</a></td>
+          <td>Self-Hosted Read-Write Data Interop</td>
+          <td><span class="rag-pill red"><span class="dot"></span>Red</span></td>
+          <td>Team Bravo</td>
+          <td><a href="#">RPOR-9003</a> — PU-B.1</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- GANTT -->
+  <section class="gantt-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div class="section-label" style="margin:0"><span class="section-label-bar green"></span>Timeline</div>
+      <span style="font-size:11.5px;color:var(--text-muted)">3 of 3 initiatives shown · range 2026-02-01 → 2026-10-01</span>
+    </div>
+    <div class="gantt-scroll-wrap">
+      <div class="gantt-inner">
+        <div class="gantt-axis-row">
+          <div class="gantt-axis-left">Initiative</div>
+          <div class="gantt-axis-right">
+            <div class="gantt-axis-tick" style="left:6%">Mar '26</div>
+            <div class="gantt-axis-tick" style="left:18%">Apr '26</div>
+            <div class="gantt-axis-tick" style="left:31%">May '26</div>
+            <div class="gantt-axis-tick" style="left:43.5%">Jun '26</div>
+            <div class="gantt-axis-tick" style="left:56%">Jul '26</div>
+            <div class="gantt-axis-tick" style="left:68.5%">Aug '26</div>
+            <div class="gantt-axis-tick" style="left:81%">Sep '26</div>
+            <div class="gantt-axis-today" style="left:44.5%">today</div>
+          </div>
+        </div>
+        <!-- FAKE-100 -->
+        <div class="gantt-row">
+          <div class="gantt-label"><a href="#"><strong>FAKE-100</strong></a><small>Multi-tenant Connectivity</small></div>
+          <div class="gantt-track">
+            <div class="gantt-bar green" style="left:7%;width:27%" title="2026-03-02 → 2026-06-05">03-02 → 06-05</div>
+            <div class="gantt-marker" style="left:56%" data-label="GA 06-30"></div>
+            <div class="gantt-today-line" style="left:44.5%"></div>
+          </div>
+        </div>
+        <!-- FAKE-200 -->
+        <div class="gantt-row">
+          <div class="gantt-label"><a href="#"><strong>FAKE-200</strong></a><small>API Auth Refactor</small></div>
+          <div class="gantt-track">
+            <div class="gantt-bar yellow" style="left:18.5%;width:37%" title="2026-04-01 → 2026-07-15">04-01 → 07-15</div>
+            <div class="gantt-today-line" style="left:44.5%"></div>
+          </div>
+        </div>
+        <!-- FAKE-300 -->
+        <div class="gantt-row">
+          <div class="gantt-label"><a href="#"><strong>FAKE-300</strong></a><small>Self-Hosted Data Interop</small></div>
+          <div class="gantt-track">
+            <div class="gantt-bar red" style="left:1%;width:66%" title="2026-02-15 → 2026-08-30">02-15 → 08-30</div>
+            <div class="gantt-marker" style="left:74%" data-label="GA 09-15"></div>
+            <div class="gantt-today-line" style="left:44.5%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="gantt-legend">
+      <div class="gantt-legend-item"><span class="gantt-legend-swatch" style="background:#22a84a"></span>Green</div>
+      <div class="gantt-legend-item"><span class="gantt-legend-swatch" style="background:#e8a800"></span>Yellow</div>
+      <div class="gantt-legend-item"><span class="gantt-legend-swatch" style="background:#c23b3f"></span>Red</div>
+      <div class="gantt-legend-item"><span style="display:inline-block;width:2px;height:11px;background:#a87d00"></span><span>GA / EAP</span></div>
+      <div class="gantt-legend-item"><span style="display:inline-block;width:2px;height:11px;background:#c23b3f"></span><span>Today</span></div>
+      <div class="gantt-legend-item" style="margin-left:auto;font-style:italic">Bar = Target Start → Target Due</div>
+    </div>
+  </section>
+
+  <!-- DETAIL PANEL -->
+  <section class="detail-section">
+    <div class="detail-panel-header">
+      <h3>Selected initiative: <span class="detail-panel-title">FAKE-100 — Multi-tenant Connectivity Hardening</span></h3>
+      <a href="#">view full dashboard →</a>
+    </div>
+    <div class="detail-row">
+      <div class="detail-card">
+        <div class="detail-label">Status</div>
+        <div class="detail-rag">
+          <div class="rag-dot-big green"></div>
+          <div>
+            <div class="rag-label-big" style="color:var(--rag-green)">Green</div>
+            <div class="rag-sublabel">Both LLDs approved; first PR in review.</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-label">Executive Status</div>
+        <ul>
+          <li>Team Alpha completed the design for tenant-specific service accounts and cross-tenant DoS protection, and started implementation.</li>
+          <li>Team Bravo is delivering the dependent Portal and LifeTime changes in parallel.</li>
+        </ul>
+      </div>
+      <div class="detail-card">
+        <div class="detail-label">Highlights / Lowlights</div>
+        <div class="hl-section highlights">
+          <h4>✓ Highlights</h4>
+          <ul>
+            <li>Both technical LLDs approved</li>
+            <li>First code in review</li>
+            <li>Cross-team backlogs progressing</li>
+          </ul>
+        </div>
+        <div class="hl-section lowlights">
+          <h4>! Lowlights</h4>
+          <ul>
+            <li>Third requirement still unscoped</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="dashboard-footer">
+    <span>Portfolio Dashboard</span>
+    <span class="footer-divider"></span>
+    <span>Snapshot 2026-05-29</span>
+    <span class="footer-divider"></span>
+    <span>Sources: FAKE-100, FAKE-200, FAKE-300</span>
+    <span class="footer-divider"></span>
+    <span>Audience: Engineering Directors &amp; Product Managers</span>
+  </div>
+
+</div>
+</body>
+</html>
