@@ -82,6 +82,12 @@
   .gantt-card h3::before{content:"";width:3px;height:14px;background:#55A868;border-radius:2px}
   .gantt-card .gantt-meta{font-weight:400;color:var(--text-secondary);text-transform:none;letter-spacing:0;font-size:11.5px;margin-left:auto}
   .gantt-grid{font-size:12px}
+  .gantt-scroll-wrap{overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .gantt-scroll-wrap::-webkit-scrollbar{height:6px}
+  .gantt-scroll-wrap::-webkit-scrollbar-track{background:transparent}
+  .gantt-scroll-wrap::-webkit-scrollbar-thumb{background:#d0d4dc;border-radius:3px}
+  .gantt-scroll-wrap::-webkit-scrollbar-thumb:hover{background:#b0b6c2}
+  .gantt-inner{min-width:600px}
   .gantt-axis-row{display:grid;grid-template-columns:200px 1fr;align-items:end;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px}
   .gantt-axis-left{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px}
   .gantt-axis-right{position:relative;height:22px}
@@ -370,7 +376,7 @@ class IndexTable {
     }
     const todayPct = ((today - minDate)/span)*100;
 
-    let html = '<div class="gantt-axis-row"><div class="gantt-axis-left">Initiative</div><div class="gantt-axis-right">';
+    let html = '<div class="gantt-scroll-wrap"><div class="gantt-inner"><div class="gantt-axis-row"><div class="gantt-axis-left">Initiative</div><div class="gantt-axis-right">';
     for(const t of ticks){
       const p = ((t - minDate)/span)*100;
       const label = t.toLocaleString('default',{month:'short',year:'2-digit'});
@@ -413,6 +419,7 @@ class IndexTable {
     if(missing.length){
       html += `<div class="gantt-no-dates">No timeline data for: ${missing.map(d=>d.key).join(', ')}</div>`;
     }
+    html += '</div></div>'; // close .gantt-inner and .gantt-scroll-wrap
     grid.innerHTML = html;
   }
   render(){
