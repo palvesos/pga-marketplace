@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "pga-marketplace",
   "description": "Paulo Alves' personal Claude Code marketplace \u2014 Engineering Manager tooling for OutSystems R&D",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "owner": {
     "name": "Paulo Alves",
     "email": "paulo.alves@outsystems.com"
@@ -10,8 +10,8 @@
   "plugins": [
     {
       "name": "initiative-dashboards",
-      "description": "Tooling for Engineering Managers and Product Managers to summarise the progress of one initiative or a portfolio of initiatives into a self-contained HTML dashboard. Includes two skills: building-initiative-dashboard (single initiative or epic) and building-portfolio-dashboard (rollup across multiple initiatives or a Value Milestone, with portfolio KPIs and drill-down links).",
-      "version": "0.7.3",
+      "description": "Tooling for Engineering Managers and Product Managers to summarise the progress of one initiative or a portfolio of initiatives into a self-contained HTML dashboard. Includes two skills: building-initiative-dashboard (single initiative or epic) and building-portfolio-dashboard (rollup across multiple initiatives or a Value Milestone, with portfolio KPIs and drill-down links). Both skills persist timestamped state snapshots on disk so successive runs accumulate a time series and surface a delta vs. the prior run.",
+      "version": "0.8.0",
       "source": "./plugins/initiative-dashboards",
       "category": "productivity",
       "author": {
