@@ -232,15 +232,11 @@ If the user selects a prior snapshot:
    - `team`, `rpor_key`, `rpor_label`
    - `target_start`, `target_due`, `ga_date`
 3. Locate the corresponding HTML file (same stem as the `.md` but with
-   `.html` extension). **Copy** it into the portfolio folder as
-   `$FOLDER/dashboard-<KEY>.html` so the portfolio's drill-down links
-   work:
-   ```bash
-   cp "$INIT_FOLDER/<stem>.html" "$FOLDER/dashboard-<KEY>.html"
-   ```
+   `.html` extension) in `$INIT_FOLDER`. **Record its absolute path** as
+   `per_initiative_html` — the portfolio index table links to it directly.
    If the HTML is not found alongside the `.md`, note this in the
    user-facing report (Step 7) but continue — the index table will
-   still link to the missing path.
+   still render the row, just without a working drill-down link.
 4. Set `write_state: false` for this initiative (no new per-initiative
    snapshot is written — the user chose an existing one).
 5. Proceed to the next initiative — **do not** invoke the inner skill.
@@ -258,10 +254,19 @@ existed):
    ```
 
    Follow the skill's full workflow (Steps 1–6), passing:
-   - **Output path override**: `$FOLDER/dashboard-<KEY>.html`
-   - **`write_state`**: `true` — the inner skill writes its own
-     `<slug>__<timestamp>.md` under `$INITIATIVE_DASHBOARDS_DIR/<slug>/`
-     and runs its own delta against the prior per-initiative snapshot.
+   - **No output path override** — the inner skill writes both the HTML
+     and the `.md` to the initiative's own folder
+     (`$INITIATIVE_DASHBOARDS_DIR/<slug>/`) as a normal standalone run.
+     This makes the new files immediately available as prior snapshots
+     for future portfolio or standalone runs.
+   - **`write_state`**: `true` (implicit — no override means the inner
+     skill's default behaviour applies). The inner skill writes its own
+     `<slug>__<timestamp>.md` and runs its own delta against the prior
+     per-initiative snapshot.
+
+   After the inner skill completes, **record the absolute path** of the
+   HTML it wrote (e.g. `$BASE_DIR/<slug>/<slug>__<timestamp>.html`) as
+   `per_initiative_html` for the portfolio index table.
 
 2. **Capture** the following synthesised content from the completed
    per-initiative render — this populates the rollup card **and** the
@@ -468,8 +473,8 @@ The detail panel below the index table is **fully data-driven** from
 The skill is responsible for capturing these from the per-initiative
 render in Step 2 and bundling them per initiative.
 
-The detail panel always links to `dashboard-<KEY>.html` for the
-currently-selected initiative — that's the drill-down path.
+The detail panel always links to the `per_initiative_html` absolute
+path for the currently-selected initiative — that's the drill-down path.
 
 ### Step 6 — Write the portfolio state snapshot (`.md`)
 
@@ -520,7 +525,7 @@ initiatives:
     target_start: 2026-03-01
     target_due: 2026-08-15
     ga_date: 2026-09-30
-    per_initiative_html: dashboard-RDUCH-169.html    # path relative to $FOLDER
+    per_initiative_html: /home/user/initiative-dashboards/rduch_169/rduch_169__2026_05_28_09_14_02.html    # absolute path
     per_initiative_state: rduch_169__2026_05_28_09_14_02.md    # null if write_state was false this run
 sources_queried: [Jira, GitHub]
 ---
@@ -562,7 +567,7 @@ sources_queried: [Jira, GitHub]
   (sorted Red → Yellow → Green, alphabetical within colour).
 - Each initiative entry must include `key`, `title_short`, `rag_status`,
   `team`, `rpor_key`, `sp_done`, `sp_in_flight`, `sp_remaining`,
-  `open_pr_count`, and `per_initiative_html`. Missing fields force the
+  `open_pr_count`, and `per_initiative_html` (absolute path). Missing fields force the
   next run to re-derive them.
 - Record `freshly_built_keys` and `reused_snapshot_keys` so the next
   run can audit which children had their own state refreshed and which
@@ -635,11 +640,6 @@ Building a new initiative dashboard is expensive (2–4 min per initiative).
 → **Always check for prior local snapshots first (Step 2.1) and offer
 them to the user before invoking `building-initiative-dashboard`.**
 
-### ❌ Not copying the reused HTML into the portfolio folder
-If the existing `.html` stays in the initiative folder instead of being
-copied to `$FOLDER/dashboard-<KEY>.html`, the portfolio's drill-down
-links break.
-→ **Always `cp` the reused HTML into `$FOLDER` as `dashboard-<KEY>.html`.**
 
 ## Quick Reference
 
@@ -648,8 +648,8 @@ links break.
 | Detect VM | `acli jira workitem view <KEY> --fields "issuetype" --json` |
 | Find VM children (epics) | `acli jira workitem search --jql "\"Epic Link\" = <VM> OR parent = <VM> OR issue in linkedIssues(<VM>)"` |
 | Check prior initiative snapshots | `ls -1t "$BASE_DIR/<slug>"/*.md 2>/dev/null \| head -10` |
-| Reuse existing snapshot | Read `.md` frontmatter; `cp <stem>.html $FOLDER/dashboard-<KEY>.html` |
-| Build new initiative dashboard | Invoke `building-initiative-dashboard` SKILL.md with output path + `write_state: true` |
+| Reuse existing snapshot | Read `.md` frontmatter; record absolute path of existing `.html` as `per_initiative_html` |
+| Build new initiative dashboard | Invoke `building-initiative-dashboard` SKILL.md (no output override); record absolute path of produced `.html` |
 | Compute timestamp | `date +"%Y_%m_%d_%H_%M_%S"` |
 | Create portfolio folder | `mkdir -p "${INITIATIVE_DASHBOARDS_DIR:-$HOME/initiative-dashboards}/portfolios/<slug>"` |
 | List prior portfolio snapshots | `ls -1t <folder>/*.md \| head -5` |
