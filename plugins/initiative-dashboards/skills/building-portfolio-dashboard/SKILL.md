@@ -313,6 +313,22 @@ existed):
 
 ### Step 3 — Compute portfolio-level KPIs
 
+**RAG handling.** The portfolio reuses each initiative's
+`rag_status` / `rag_label` / `rag_headline` **verbatim**. Do not
+recompute, average, or override. The shared rubric — including the
+canonical labels, the six inputs, the worst-of rule, and the
+banned vocabulary — lives in
+[../building-initiative-dashboard/reference/rag-rules.md](../building-initiative-dashboard/reference/rag-rules.md)
+and applies to both skills. The portfolio dashboard intentionally
+does **not** render a single overall RAG light: the G/Y/R count
+strip is the signal.
+
+**Stale snapshots.** If a reused per-initiative snapshot is older
+than **14 days** at portfolio snapshot time, tag it as `stale` in the
+Initiatives Index (e.g. a small badge next to the date) but do not
+change its RAG. The author of the next per-initiative refresh owns
+the colour.
+
 Aggregate across all initiatives:
 
 | KPI | How |
@@ -595,7 +611,8 @@ Tell the user:
    wrong VM walk can produce a 10-minute run against irrelevant tickets.
 2. **Reuse the inner skill's hero output verbatim.** Don't re-derive
    RAG or rewrite the exec bullets — the per-initiative dashboard is
-   already canonical; just copy.
+   already canonical; just copy. The shared rubric lives in
+   [../building-initiative-dashboard/reference/rag-rules.md](../building-initiative-dashboard/reference/rag-rules.md).
 3. **Sort initiative cards by RAG severity** (Red first, then Yellow,
    then Green). Leadership scanning starts at the worst.
 4. **Keep the portfolio exec summary at ≤80 words.** It's a higher
@@ -624,7 +641,10 @@ The cards already show per-initiative exec bullets.
 ### ❌ Rendering with stale RAG values
 If you cache and the inner skill is updated, RAG can drift.
 → **Re-run the inner workflow each time. Don't read prior dashboards
-back as source of truth.**
+back as source of truth.** When the user explicitly reuses a prior
+snapshot via Step 2.2, surface the snapshot date in the index table
+and tag it `stale` if older than 14 days (see the shared rubric:
+[../building-initiative-dashboard/reference/rag-rules.md](../building-initiative-dashboard/reference/rag-rules.md)).
 
 ### ❌ Forgetting to sort by severity
 A green-first ordering buries the lead.
@@ -665,3 +685,6 @@ them to the user before invoking `building-initiative-dashboard`.**
 The inner skill (`building-initiative-dashboard`) provides:
 - `reference/data-sources.md` — per-initiative data source commands
 - `reference/dashboard-template.html` — per-initiative HTML template
+- `reference/rag-rules.md` — **shared RAG rubric** (inputs, labels,
+  headline format, worst-of rule, stale-snapshot rule). Both skills
+  follow this rubric; don't fork it.

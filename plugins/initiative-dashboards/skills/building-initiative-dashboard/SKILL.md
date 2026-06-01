@@ -384,9 +384,18 @@ The dashboard has **four narrative blocks**. Author all of them.
 
 **Card 1 — Status traffic light**
 - `RAG_STATUS`: one of `green`, `yellow`, `red` (lowercase, no quotes)
-- `RAG_LABEL`: short label, e.g. `On Track`, `At Risk`, `Off Track`,
+- `RAG_LABEL`: canonical label — `On Track` | `At Risk` | `Off Track` |
   `Pre-implementation`
-- `RAG_HEADLINE`: one short sentence explaining the colour
+- `RAG_HEADLINE`: one factual sentence (≤ 25 words) that names the
+  input driving the colour — scope, schedule, sequencing, unsized,
+  dependency, or design gap.
+
+**Pick the colour using the shared rubric in
+[reference/rag-rules.md](reference/rag-rules.md).** It defines the six
+inputs (scope / schedule / sequencing / unsized / dependencies /
+design gaps), the worst-of rule, the canonical labels, and the banned
+vocabulary. The same rubric applies to the per-track RAGs in Step 5.2
+and to the portfolio rollup.
 
 **Card 2 — Executive Status** (3-5 short bullets)
 
@@ -453,7 +462,10 @@ Bulleted executive prose for Engineering Directors and PMs. 6-10 bullets:
   *"Since last report (2026-05-13): +12 SP delivered, RQ02 moved
   Yellow→Green, 2 new stories added to RQ03."* Omit if this is the first
   snapshot.
-- Per-track RAG (Green/Yellow/Red with one-line justification each)
+- Per-track RAG (Green/Yellow/Red with one-line justification each).
+  Use the same rubric as the overall RAG —
+  [reference/rag-rules.md](reference/rag-rules.md). A track can be
+  Green while the overall is Yellow; that's the point of breaking it out.
 - Cross-team execution health
 - Open risks for leadership attention (as a nested bullet group)
 - Next milestone (the one gate that clears the biggest current flag)
@@ -626,9 +638,11 @@ sources_queried: [Jira, GitHub, Productboard]
 
 3. **RAG must be defensible** — Green/Yellow/Red per track must have a
    one-line reason that an EM can repeat in a meeting. No "Yellow because vibes".
+   Follow the shared rubric: [reference/rag-rules.md](reference/rag-rules.md).
 
 4. **Sequencing risks are first-class** — if M-stories are In Progress before
-   their LLD is Done, call it out as Yellow in the summary.
+   their LLD is Done, call it out as Yellow (or Red if multiple tracks are
+   affected). This is rule 3 of the shared rubric.
 
 5. **Never invent data** — if PB or Confluence wasn't queryable, omit the
    section rather than fabricating it.
@@ -682,3 +696,4 @@ This is for executives.
 |---|---|
 | [reference/data-sources.md](reference/data-sources.md) | Custom field IDs, JQL patterns, and per-source command details |
 | [reference/dashboard-template.html](reference/dashboard-template.html) | The HTML template with substitution placeholders |
+| [reference/rag-rules.md](reference/rag-rules.md) | Shared RAG rubric — inputs, labels, headline format, worst-of rule. Also used by the portfolio skill. |
